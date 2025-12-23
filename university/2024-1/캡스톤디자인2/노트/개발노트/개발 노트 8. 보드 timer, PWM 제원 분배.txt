@@ -1,0 +1,97 @@
+arduino mega 2560 timer/PWM
+
+8-bit timer(0, 2)
+16-bit timer(1, 3, 4, 5)
+
+8-bit Timer 0: PWM 핀 4, 13
+16-bit Timer 1: PWM 핀 11, 12
+8-bit Timer 2: PWM 핀 9, 10
+16-bit Timer 3: PWM 핀 2, 3, 5
+16-bit Timer 4: PWM 핀 6, 7, 8
+16-bit Timer 5: PWM 핀 44, 45, 46
+
+
+
+fan motor
+->
+PWM 1channel
+
+
+
+RGB LED module
+->
+PWM 3channel
+->
+timer(3, 4, 5) 중 1개
+->
+PWM 핀을 모두 사용해야하기 때문에, timer5의 44, 45, 46번 핀을 사용한다.
+
+
+
+passive buzzer
+->
+timer(2, 3) 중 1개
+
+
+
+stepper1, stepper2
+->
+16-bit timer 2개.
+->
+timer(1, 3, 4, 5) 중 2개
+
+
+
+
+
+
+
+라이브러리에 어떠한 블로킹이 있을지 모른다.
+따라서 하드웨어 자원을 최대한 활용한다.
+->
+timer0 - systick timer - 건들지 않는다.
+
+timer1 - 팬모터 (pin11, 12)
+
+timer2 - 수동 부저 (pin9, 10)
+
+timer(3, 4) - 스테퍼 모터(1, 2)
+
+timer5 - RGB LED (pin44, 45, 46)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ tip
+
+libraryUsingTimer.h
+tone()
+analogWrite()
+->
+실행 즉시 타이머가 설정된다.
+
+
+
+
+
+
+
+
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ endline

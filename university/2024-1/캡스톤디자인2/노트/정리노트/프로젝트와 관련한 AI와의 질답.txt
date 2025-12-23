@@ -1,0 +1,2819 @@
+
+
+
+
+'4학년 1학기 캡스톤디자인2'에 대한 정보
+->
+    초기에 내가 정리한 내용
+    ->
+        4학년 1학기 캡스톤디자인2
+        ->
+            주제
+            ->
+                스마트 공기 청정기: 우선 공간을 파악하고 시간이나 먼지량에 따라 원하는 지점에서 혹은 움직이며 공기 청정 기능을 함.
+
+                
+
+            핵심 기술
+            ->
+                하나의 보드에 많은 모듈을 탑재하기 위한 HW 자원 분할.
+
+                non-blocking 방식의 SW 구현으로 실시간 동작 및 확장성 확보.
+                
+                초음파 2개에 의존한 직진 주행 보정 알고리즘.
+
+                stepper motor의 step 수를 기반으로 하여 현재 공간의 지도를 우선 작성하고, 이후에 움직이는 과정에서 step 수를 재측정하여 지도를 지속적으로 보정하고 실시간으로 차체의 위치를 계산.
+
+                이전 캡스톤디자인에서 구현한 Wi-Fi 코드에 SW transmit buffer를 추가하여 non-blocking 방식으로 원활한 통신 구현.
+
+                최종적으로 디버깅 LED를 제외한 모든 기능을 app으로 제어.
+                
+                
+                
+
+            요약
+            ->
+                제원
+                ->
+                    1 arduino MEGA
+                    2 stepper motors
+                    4 ultrasonic sensors
+                    1 Wi-Fi module (ESP8266)
+                    1 dust sensor (PMS7003)
+                    1 fan motor
+                    1 gas sensor
+                    1 tilt sensor
+                    1 IR sensor (phototransistor for line-following)
+                    4 touch sensors
+
+                이전에 '서빙로봇'의 주제로 자율 주행 구현에 실패한 팀에 코더로 참가했다.
+                기존 팀의 차체 제작과 같은 HW 노하우(전기전자의 HW라기 보단, 기계적 설계에 가까워.)에, 나만의 무선 통신과 다양한 모듈 제어와 같은 SW 노하우를 추가하여, 큰 스케일의 작품을 만들 수 있었다.
+
+                코드의 양이 방대하기 때문에, 변수 네이밍과 모듈화에 집중하여 확장성을 챙겼고,
+                각 기능에 대해 실행되지 않을 때는 조건 확인과 같은 필수적인 코드만 실행되도록 하여 런타임 리소스를 관리했다.
+
+
+
+            시행 착오
+            ->
+                프로젝트 주제에 대해 앞으로의 설계를 잘 했다고 생각했는데, 그러지 못한 것들도 있었다.
+                ->
+                    1.
+                        초기에 stepper motor를 timer로 제어하지 않고 SW로 timing을 구현했다.
+                        많은 기능이 stepper motor의 step 수와 보드 가동 시간을 활용했는데, timer 제어로 변경하지 않았다면 프로젝트 전체에서 큰 오차가 발생했을 것이다.
+                        다행히도 SW로 timing을 구현할 때 다른 작업으로 인해 모터의 동작이 지연될 경우를 대비하여 지연된 만큼 더 빠르게 동작하도록 구현한 덕분에, 초기에 문제를 발견할 수 있었다.
+
+                    2.
+                        시간이 촉박하다고 판단하여 분할구현을 하지 않고 하나의 소스파일로만 작업했는데, 처음부터 각 기능을 라이브러리로 분할했다면 완성도가 더 높았을 것이다.
+                        프로젝트 종료 이후에 일부 기능을 분할구현하며 cpp 실력을 쌓았다.
+
+
+
+            팀 프로젝트로서 적을 내용
+            ->
+                1.
+                    더 완벽한 작품을 만들기 위해서.
+
+                    팀장은 팀원들과 함께 전체 그림과 차체의 기능을 설계했다.
+                    코딩을 어느 정도 할 줄 아는 팀장은 처음에 나와 함께 코드 작업을 했으나 실력 차이가 명백하게 드러났으며,
+                    함께 코드 구조를 설계하되 코드 작업을 오로지 나에게 일임하도록 팀장에게 제안함으로써 작품성과 다기능을 모두 챙길 수 있었다.
+
+
+
+            unclassified
+            ->
+                ~~
+
+                '하나의 보드에 많은 모듈을 탑재하기 위한 HW 자원 분할'에 대해, 프로젝트 당시 정리한 노트 내용.
+                ->
+                    arduino mega 2560 timer/PWM
+
+                    8-bit timer(0, 2)
+                    16-bit timer(1, 3, 4, 5)
+
+                    Timer 0: PWM 핀 4, 13
+                    Timer 1: PWM 핀 11, 12
+                    Timer 2: PWM 핀 9, 10
+                    Timer 3: PWM 핀 2, 3, 5
+                    Timer 4: PWM 핀 6, 7, 8
+                    Timer 5: PWM 핀 44, 45, 46
+
+
+
+                    fan motor
+                    ->
+                    PWM 1channel
+
+
+
+                    RGB LED module
+                    ->
+                    PWM 3channel
+                    ->
+                    timer(3, 4, 5) 중 1개
+                    ->
+                    PWM 핀을 모두 사용해야하기 때문에, timer5의 44, 45, 46번 핀을 사용한다.
+
+
+
+                    passive buzzer
+                    ->
+                    timer(2, 3) 중 1개
+
+
+
+                    stepper1, stepper2
+                    ->
+                    16-bit timer 2개.
+                    ->
+                    timer(1, 3, 4, 5) 중 2개
+
+
+
+
+
+
+
+                    라이브러리에 어떠한 블로킹이 있을 지 모른다.
+                    따라서 하드웨어 자원을 최대한 활용한다.
+                    ->
+                    timer0 - clock - 건들지 않는다.
+
+                    timer1 - 팬모터 (pin11, 12)
+
+                    timer2 - 수동 부저 (pin9, 10)
+
+                    timer(3, 4) - 스테퍼 모터(1, 2)
+
+                    timer5 - RGB LED (pin44, 45, 46)
+
+
+
+    정보를 더 늘리기 위해, 너에게 요청한 면접 질문과 그에 대한 나의 답변.
+    ->
+        단순 공기 청정이 아니라, “**시간·먼지 센서 값**에 따라 원하는 지점으로 이동한다”는 아이디어인데,  
+        이 흐름을 어떻게 **SW 로직**으로 설계했나요? (예: “주기적 센싱 → 임계값 초과 시 이동 명령 → 위치 도달 시 팬 작동” 등)
+        ->
+            SW 로직을 설명하기보단, APP의 명령 인터페이스를 말해주는 게 좋을 것 같아.
+            ->
+            우선 차체 부팅 시, 초기 맵을 1회 작성해야 해. 이건 매핑 부분에서 설명할게.
+            그리고 차체가 집안에서 어떻게 움직이는지도 자율주행 부분에서 자세하게 설명할게.
+            차체의 주행에 대해서는 '초음파는 전방 2개, 우측 2개로, 벽의 오른쪽을 따라만 가.
+            처음 부팅 때 시작이 어디든 벽을 먼저 찾고, 집에서 집까지 최소 한 바퀴를 돌아서, 처음 맵을 완성해.
+            중요할지도 모르는 내용인데, 차체는 집안의 한 가운데에 있을 수 없고(어쩌다가 한 가운데에 있게 되면, 벽부터 찾고 다시 할 일 하러 가.), 벽에만 위치해.'
+            이렇게만 알고 있어봐.
+            ->
+            셋업(맵 1회 작성) 이후 집(검은색 바닥이고, 인식은 차체 바닥의 라인트레이서용 적외선 센서) 혹은 어디서도, 그리고 가동 중이어도 다시 명령을 내릴 수 있어.
+            어디 위치에 고정해서 혹은 움직이면서, 몇 시간을 혹은 몇 바퀴를, 팬모터 강도는 하나로 결정할지 혹은 먼지값에 따라 할지(팬모터 제어 물리버튼 4개, APP에서 제어버튼 4개, 각각 PWM값 0, 150(LOW), 255(HIGH), 먼지값에 따라서.),
+            결정할 수 있어. 이게 정확한 건 아니고 잘 기억이 나지 않는데, 대강 어떤 느낌인지 알겠지?
+
+            SW 로직으로 설명해보자면,
+            ->
+            사실 코드 구성은 중요하지 않다고 생각해. 기억도 잘 안 나고. (물론 기록은 있고, 당장 볼 수도 있어.)
+            코드 설계할 때 어떤 규칙을 정하고 어떤 방식으로 설계 및 작성했는지가 중요해서.
+
+
+
+
+
+
+
+
+        “자율 주행” + “공기청정”이 결합된 컨셉인데,  
+        중점이 “주행 알고리즘”에 있나요, 아니면 “센싱/청정”에 있나요?
+        ->
+            주행이 된다는 가정 하에(차체가 집안을 돌아다닐 수 있다는 가정 하에), 센싱/청정 등의 기능이 유효한 것이라서.
+            그리고 3-2 캡스톤1때 사실상 실패했던 자율주행을, '내가 너네 팀의 코더로 들어가서 자율주행 완성할게. 서빙로봇이든 로봇청소기든 뭐든 만들어보자'고 했으니,
+            아무래도 자율주행이 더 중점이지.
+            주행에는 4초음파가 함께 하니까, 굳이 중점 순위를 매기자면,
+            주행 > 센싱 > 청정이야.
+            청정은 그냥 다 짜놓은 바탕에 기능 추가하는 느낌이니까. 물론 아무리 코드 모듈화와 구조가 잘 되어있어도 쉽게 추가되지 않는 기능도 있었지만.
+
+
+
+
+
+
+
+        2. **왜 ‘하나의 보드(Arduino MEGA)에 많은 모듈’을 탑재했나?**  
+        - 이 프로젝트처럼 센서/모터가 많은 경우, “분산 보드”나 “ROS (Robot Operating System)” 같은 선택지도 있을 텐데,  
+            - 하나의 보드로 다 처리하기로 한 근거와 장단점은 무엇인가요?  
+            - 실제로 모듈 간 노이즈나 충돌(핀, 타이머)이 우려되진 않았나요?
+        ->
+            모듈이 아무리 많아도, 코드량이 너무 방대하더라도, arduino MEGA 제원이라면, 전혀 모자라지 않을 것이라 생각했어.
+            물론 결국 timer 5개를(timer0은 내부 시간 제어 라이브러리/함수에 쓰이니까 건들면 안 되고. 마치 ARM에서 HAL driver를 쓰는데 systick timer를 건들지 않는 것처럼.)
+            다 쓰긴 했지만, 초기에는 설계하지 않아도 될 정도라고 생각했어. 어떻게 보면 오만이었을지 모르지만, 신경을 안 써도 될 것이라는 그 정도가 컸으니까.
+
+            왜 하나의 보드를 사용했는가?
+            ->
+                1.
+                거의 모든 임베디드 제품은 하나의 MCU를 사용하는 걸로 알고 있어.
+                2.
+                non-blocking으로 멀티 모듈 제어에 매우 자신이 있었고, 기능적으로도 아주 좋은 발표? 발표 점수 소스였고.
+                3.
+                그냥 누가 봐도 보드 하나로 충분했어.
+
+                등의 여러 이유들로 보드 하나로 하기로 했어.
+                물론 두 개의 보드를, GPIO만 연결해서 데이터를 주고받는 게 됐었으니, 모자라면 낮은 제원의 보드를 추가하고, 일부 기능이나 연산을 넘기면 됐었어.
+
+            ROS라는 걸 지금 처음 들어봐서 검색해봤는데, 이에 대한 답변
+            ->
+                arduino에서 존재하는 ROS를 학습하고, 그것에 맞춰서 코드를 설계하고 구현한다?
+                내가 그때 ROS를 알고 있었더라도, 절대 선택해선 안 됐다고 생각해.
+                그 ROS 학습 시간, 그리고 코드량도 어마무시하게 많아질텐데(결국 3천 줄) 맨 땅에(물론 arduino 자체가 편하긴 하지만, 여튼.) 처음부터 설계하고 구현하는 게 훨씬 쉽겠지.
+                ROS에 맞춰서 설계/구현한다면, 그 때는 자신 없고, 지금도 자신 없어.
+
+                우리 주제가 서빙로봇/로봇청소기/공기청정기 같은 건데, 비슷한 주제로 상용 제품 프로젝트라면 ROS를 당연히 고려하겠지. 왜냐하면,
+                비슷한 주제일지라도 그에 비해선 우리 과캡스톤 프로젝트는 터무니없이 규모가 작으니까.(눈에 보이는 기능은 규모가 비슷할 수 있지만 구현/설계 등 여러 부분에서 정밀하게 하는 건 엄청 차이가 나.)
+                내가 혼자 3개월 만에 프로젝트를 만들 정도로.
+
+            실제로 모듈 간 노이즈나 충돌(핀, 타이머)이 우려되진 않았나요?
+            ->
+                arduino mega의 스펙은 엄청나기 때문에, HW적 충돌은 없었어. 충돌이 났다고 해도, 그것은 내가 코드를 잘못 짠거였고.
+                우리 프로젝트 규모가 학과 수준에서 역대급으로 많은 모듈과 기능을 탑재했음에도, 이 보드는 제원이 참 넉넉해.
+
+            충돌이 하나 있긴 했어.
+            ->
+                차체의 주행은 4초음파에 의존해. (주행 관련해서는 다른 질문에서 다룰게.)
+                4개의 초음파는 동일 모델
+                다른 모델명의 HC-SR04, HC-SR05처럼 같은 시리즈에 속한 것들은, 데이터시트를 보면 결국 초음파의 주파수 대역이 같더라고.
+
+                동일한 주파수의 초음파를 사용한다면, 충돌이 일어나.
+                해결 방법 두 가지가 있었어.
+                ->
+                    1.
+                    서로 다른 주파수의 초음파를 사용하는 제품, 예를 들어 서로 다른 시리즈에 서로 다른 주파수의 네 가지 모델을 하나씩, 총 4개를 사용하는 거야.
+                    여기서도 두 가지 문제가 있어.
+                    과연 서로 다른 주파수를 사용한다 해도, 충돌이 없는가?
+                    그리고 구현 시간.
+                    2.
+                    동일한 초음파 모듈을 사용하되, 간섭이 일어나지 않게 늘 하나의 모듈만 동작하도록 설계하는 거야.
+                    이 경우 문제가 있다면, 런타임 리소스, 그리고 하나씩밖에 실행하므로 성능 문제.
+                ->
+                이 문제를 자세히 설명할게.
+                ->
+                    런타임 리소스.
+                    성능 문제는 다음의 글에 포함돼있어. '초음파를 1초에 최대 2.5cycle밖에 작동시키지 못 한다'와 같은 내용이야.
+                    ->
+                        일반적으로 초음파 센서를 사용할 때 arduino의 pulseIn() 함수를 사용해.
+                        이 함수는 실행 이후 지정한 pulse로 변경될 때까지 delay되는 blocking 함수야.
+                        HC-SR04, HC-SR05 초음파 모듈이 데이터시트상 최소 측정 거리인 2cm 정도라면 굉장히 짧은 시간에 함수가 끝나는데,
+                        초음파 감지를 하지 못 했거나 최장거리라면 당시 계산과 실제 시간 측정으로 최대 78ms 정도였어.
+                        4개의 초음파를 하나씩 구동하고 한 바퀴를 도는 사이클 단위로 계산해보면,
+                        1초에 1cycle이라면 (78ms는 80ms로 근사할게.) CPU는 0.4초(40%)가 block돼.
+                        그런데 1초에 1cycle이라면, 주행 반응이 어엄청 느려.
+                        또한 뒤이어 설명할 건데, 2초음파가 우측 벽과의 거리, 2초음파가 전방 벽과의 거리를 측정하는 우리 프로젝트의 '주행 알고리즘' 특성상 오차도 생겨.
+                        그렇다면 1초에 2cycle로 계산해보자. CPU는 0.8초(80%)가 block돼.
+                        고작 초음파를 쓰는데 40%, 80%가 block된다는 게, 말이 안 되지.
+                        또한 우리는 처음부터 HW 자원 분배 설계를 하지는 않았지만,
+                        단일 보드로 멀티 모듈 제어를 하기 위해 코드 설계를 반드시 non-blocking 방식으로 구현하고자 했어.
+                        이 방식에도 반하지. blocking될 뿐더러 그 시간이 CPU 런타임의 40%에서 80%라니.
+                        애초에 1초에 2cycle이라고 해도, 반응 속도가 너무 느려서 안 돼.
+                        ->
+                        그래서 이를 해결하고자 pulseIn() 함수의 동작 방식과 우리가 사용하는 초음파 센서(HC-SR05)의 동작 방식(데이터시트에서 확인함.)를 확인했어.
+                        알아보니 간단하더라고. HIGH인지 LOW인지 까먹었지만, 특정 pulse가 유지되는 시간을 측정하고, 그걸 우리가 SW상에서 음속 기반의 시간/거리 공식에서 거리를 계산하는 거였어.
+                        구현할 때 고려해야 할 점을 생각해봤는데,
+                        아무래도 주행에 사용되다 보니까, 정밀했으면 좋겠다고 판단했어.
+                        따라서 polling이 아닌 external interrupt를 사용했어.
+                        interrupt를 사용하니, CPU 런타임 문제는 계산상 완전히 배제해도 돼.
+                        ->
+                            문제
+                            1.
+                            초음파는 동시간에 하나밖에 작동시키지 못하므로, 최대 측정 시간인 80ms에서 간섭을 고려해 조금 더 여유롭게 해서 100ms로 정했어.
+                            따라서 1초에 10번 측정, 1초에 2.5cycle이 최대야.
+                            이거는 우리가 방법 2번을 선택한 이상, 해결 방법이 없어.
+                            뭐, 그렇다고 방법 1번을 선택할 수는 없으니.
+
+                            문제
+                            2.
+                            arduino MEGA 보드의 외부 인터럽트는 총 6개야.
+                            4초음파 각각 하나씩 할당하면, 무려 4개나 사용하는 거야.
+                            따라서 나는 혹시나 하는 마음에, 하나의 외부 인터럽트에 두 개의 초음파 echo 핀을 써봤고,
+                            '단거리에서 거리값이 조금이라도 이상하다면 오류로 판단'하는 실험 조건에서, 돌려놓고 밥 먹고 왔는데도 오류가 0이었어. 성공적이었지.
+                            더 나아가 3초음파, 4초음파를 하나의 외부 인터럽트에 할당해 실험했고,
+                            3초음파는 '뭔가 꼬여서 더 이상 외부 인터럽트 핀이 동작하지 않는' 확률이 5% 이하였고, 오류 확률이 30% 이상이었어.
+                            4초음파는 당연히 문제가 더 심했어.
+                            ->
+                            우리가 전자공학과로서 회로적으로 이거를 해결해볼까 했어.
+                            '오실로스코프와 적절한 다이오드(전압 강하를 신경써야 해.)와 회로교수님 도움으로 해결해보자' 했고, 간단히 다이오드로 실험은 했고, 확률이 조금 줄었어. 무의미하지.
+                            ->
+                                프로젝트 전체에서 외부 인터럽트를 쓸 계획이 없어서,
+                                1인터럽트에 2초음파로, 즉 4초음파에 2인터럽트를 할당하는 것으로 끝내자고 판단해서, 또한 전체적으로 시간 부족으로 실험하지는 못했어.
+                                이번 프로젝트 중 가장 후회되는 것이 이거야.
+                                (여기 추가할 내용은 아니긴 한데, 그냥 적을게.) 후회의 첫 번째는 시간이 부족할 줄 알고 하나의 소스파일에 구현한 것. -> 어떤 상황이든 모듈화를 하면서 진행해야 했어.
+                                두 번째가 이 실험을 하지 않은 거야.
+                                '임베디드 소프트웨어' 분야로 취업을 희망하면서 동시에 전자공학과로서, 이 실험은 큰 경험이 될 것이었는데.
+                                그리고 대학 생활 중에 오실로스코프를 쓸 상황이 없었기에, 이 실험에서 처음으로 사용할 수 있었거든.
+
+
+
+
+
+
+
+        3. **기울기 센서·라인 IR 센서·터치 센서 등**  
+        - 기울기 센서는 “차체가 쓰러지는 상황” 감지한다 했는데, 구체적으로 어떤 로직(각도 임계값 등)으로 처리했나요?  
+        - 라인 감지 IR 센서는 “집(충전대)” 역할이라 했는데,  
+            - 만약 바닥색이 바뀌거나 조도가 달라지면 오작동 우려는 없었나요?  
+        - 터치 센서는 APP 대신 직접 FAN On/Off 한다고 했는데, “동시에 APP 명령이 오면 충돌은 없는지?” 궁금합니다.
+        ->
+            기울기 센서는 그냥 polling으로 값을 지속적으로 확인하도록 했어. HW 자원 안 쓰고. 어차피 코드 한 줄이기도 해서.
+            임계는 뭐, 센서의 포텐셔미러 조절해서 원하는대로 맞췄고.
+            중요하지 않으니 이건 그냥 넘어가자. 뼈대도 아니고, 하나 덧붙인 기능일 뿐이야.
+            다만, 전체 로직에서 '차체 쓰러졌을 때'를 우선 순위로 두기는 했어. 이때 다른 기능은 멈출 수 있고.
+
+            만약 바닥색이 바뀌거나 조도가 달라지면 오작동 우려는 없었나요?
+            ->
+                이것도 중요하지 않아.
+                집은 원래 충전대여야 해. 그걸 우리가 구현하기는 불가능하니까, 검은색 바닥(그냥 커다란 색종이)과 검은색 인식하는 센서로 대체했을 뿐이야.
+                이걸 더 보완할 이유는 없어.
+                다만, 테스트나 시연에서 집이 잘 인식되도록, 초기에 센서 값을 조정해두고, 색종이도 무광으로 하면 더 좋았고,
+                원활한 진행을 위해 이 정도만 했어.
+
+            터치 센서는 APP 대신 직접 FAN On/Off 한다고 했는데, “동시에 APP 명령이 오면 충돌은 없는지?” 궁금합니다.
+            ->
+                우선 물리적으로 4터치스위치를 눌러도, APP에 현재 팬 상태가 바뀌도록 했어.
+                충돌은, 물리적 제어와 APP 제어의 우선 순위는 딱히 없어.
+                물리 제어와 APP 제어에서 인터페이스도 동일하고.
+                터치 센서를 누름과 동시에 APP 명령이 오면 충돌은 없어. 터치 센서와 APP 명령은(그냥 와이파이 통신 수신.) 전부 polling이야.
+                순서대로 처리하니, 마지막에 누른 게 적용되겠지.
+                
+                이 질문은 딱히 의미가 없는 것 같아.
+                아! 지금 생각해보면 APP에서 터치스위치 자체를 활성화/비활성화하는 기능을 추가할 수도 있겠다.
+                근데 터치센서가 오작동을 일으키지는 않아서.
+                뭐 이것도 핵심은 아니고 그냥 부가 가능이 될 뿐이니까.
+
+
+
+
+
+
+
+        1. **Timer 자원 설계 과정**  
+        - Arduino MEGA의 8-bit Timer(0,2), 16-bit Timer(1,3,4,5)를 어떻게 나눠 썼는지?  
+            - (예) Timer1 → 팬모터 PWM, Timer2 → 부저, Timer3/4 → 스텝퍼, Timer5 → RGB LED 등.  
+        - 타이머 배분 시 어떤 기준으로 결정했나요? (예: 16-bit 필요 여부, 핀 충돌, 주파수 등)  
+        - “Timer0 (millis, clock) 건들지 않는다”라고 했는데, 혹시 “millis()가 block”되는 문제가 발생할 여지는 없었나요?
+        ->
+            그 '(예)'가 맞아. 더 설명 안 할게.
+            아 아니다. 이거 설명 조금만 할게.
+            타이머가 8비트와 16비트가 있고, PWM이 두 개인지 세 개인지도 중요했거든.
+            부저는 가장 후순위라서 결국 8-bit timer2에 배치.
+            RGB LED는 3개의 PWM이 반드시 필요했으니, timer5에 배치.
+            남은 세 개의 타이머를 팬모터와 스테퍼 모터 2개에 할당하는 기준은, HW적인 건 더 없고,
+            차체 만들고 나니 각 타이머가 연결된 GPIO 핀이 팬모터와 스테퍼 모터, 어디에 가까운지에 따라, 배선이 편한 대로 배치했어.
+
+            Timer0 (millis, clock) 건들지 않는다”라고 했는데, 혹시 “millis()가 block”되는 문제가 발생할 여지는 없었나요?
+            ->
+                millis()는 Timer0 overflow interrupt로 시간 값을 반환해.
+                외부 인터럽트를 쓰는 초음파가 ISR에서 거리값을 계산하는데, ISR에서 값이 업데이트가 되지 않아서 계산이 안 돼.
+                따라서 timer0 counter 값을 직접 읽는 방식으로 충돌이 없는 micros()로 통일했어.
+                그리고 millis()보다는 micros()가 더 정밀한 이유도 있어. 마이크로초 단위의 정밀함을 요구하는 일은 없긴 했지만.
+
+
+
+
+
+
+
+        2. **스텝퍼 모터 2개 + 초음파 4개**  
+        - 2개의 스텝퍼를 **동시에** 구동할 때, 각 스텝의 타이밍을 어떻게 동기화했나요?  
+        - 초음파 센서 4개를 “직진 보정”에 활용한다고 했는데, 각각 위치가 어디에 달려 있고, 어떤 수학적 로직으로 “직진 편차”를 산출했나요?
+        ->
+            이게 가장 핵심이야.
+
+            결과적으로 '자율 주행'이라고 할 수 있을지는 모르겠지만, 우리가 왜 4초음파로 우측 벽을 따라 이동하고, 또 주행 로직은 어떻게 짰는지, 그 흐름을 전부 설명해줄게.
+            ->
+                주행에 어떤 센서를 사용할 것이냐?
+                ->
+                    1.
+                    LiDAR(light detection and ranging) 센서
+                    ->
+                    arduino와 호환되며 개발이 편리한 LiDAR 센서가 있었어.
+                    가격이 5만원 정도로 비쌌어.
+                    2.
+                    다량의 초음파 센서로 다방면의 거리를 측정하는 방법.
+                    3.
+                    다축 자이로 센서. 이거는 방법 1번이나 2번과 함께 사용할 수도 있었어.
+                ->
+                2번을 선택했는데, 명확한 근거는 없어. 귀찮아서라고 할 수도 있겠네.
+                그래도 굳이 이유를 적자면,
+                ->
+                    1.
+                        할 게 많아. 시간 없어.
+                        ->
+                        사실 이건 이유가 안 되는 게, LiDAR 특성과 사용법, 구현 방법에 걸리는 시간과,
+                        4초음파로 주행 로직 설계하는 시간이,
+                        당시에는 둘 다 어떻게 될 지 모르니까 비교할 수가 없었어.
+                        그냥 단지, '초음파로 쉽게 가자'는 생각이었을 거야. 초음파로 주행 로직 설계하는 데에만 2주일 이상을 소비할 줄도 모르고.
+                    2.
+                        맨 땅에서부터 내가 하나씩 전부 코드를 설계하면서 진행할 건데, '단일 보드로 멀티 모듈 제어'와 'non-blocking 방식의 코드' 이 두 가지 조건이 있었어.
+                        우리가 구현하고자 하는 목적은 변치 않기에, '기능이나 성능이 좋은 모듈'을 쓰면 목적은 쉽게 달성할 수 있어.
+                        하지만 이 모듈은 그에 맞는 정해진 사용법이 있겠지?
+                        따라서 프레임워크 혹은 어떠한 제한되는 상황이 생기면, 두 가지 조건으로 코드 설계함에 있어 매우 골치아파져.
+                        반대로 '가벼운 모듈'을 선택하면 '목적을 달성하기 위해 구현이 매우 복잡해질 수 있음'인데, 그럼에도 위와 같은 이유로 이걸(초음파) 선택했어.
+                ->
+                이제 초음파로 어떻게 주행할 것인지 설계해야 해.
+                ->
+                    LiDAR라면 집안의 어느 곳이든 자유롭게 돌아다닐 수 있어. 자이로 센서도 필요할지 모르겠지만, 여튼.
+                    초음파로도 이게 가능할까? 조사를 했어.
+                    초음파 센서의 특성을 파악했고, 당시 내가 정리한 글은 다음과 같아. 불필요한 내용이 있을 수도 있으나, 우선은 빠짐없이 읽어봐.
+                    ->
+                        1.
+                        초음파 센서의 특성
+                        ->
+                        HY-SRF05 각도와 거리 오차  :  측정 가능한 각도는 35도 이내이며, 각도에 따라 계산할 때 거리가 멀수록 삼각함수를 활용한 측정이 무의미해지고 센서와 벽과의 수직 거리에 근접하게 측정된다.
+
+
+                        noise가 발생하지 않는 최대 각도는 30도이다.
+                        삼각함수를 활용한 대각선 거리 계산은 20cm 이하에서 유효하며, 20cm 이상에서 점차 의미가 사라져 200cm에서 20도를 틀어도 205cm가 측정된다.
+                        ->
+                        직선 주행 코드를 실행하는 동안에, 이 각도 이상 틀어지지 않는다는 조건을 걸어야 한다.
+
+
+                        1.
+                        스테퍼 모터의 특성
+                        ->
+                        탈조 위험 요소 2가지  :  high speed operating, sudden load change
+
+
+
+                        // 기울기에 따른 삼각함수 거리 계산은 하지 말자. 비율을 두 번이나 적용하여 targetLine까지 너무 오래걸린다. 거리를 더 크게 측정하게 두자. 더 빨리 기울어지게.
+
+                        목표 기울기 근처에서는 기울기가 수시로 변하여, 차체에 대미지를 줄 수 있다.
+                        ->
+                        멀리서는 가파르게, 근처에서는 완만하게 하기 위해 이 역시 비례를 적용한다.
+                        ->
+                        (목표 기울기)와 (현재 기울기)의 차이와 비례하게 한다.
+
+
+
+                        차체 특성상 회전 알고리즘은 실시간으로 제어할 수 없으며, 물리적으로 측정하여 대입해야 한다.
+
+
+
+                        초음파 좌측 2센서, 우측 2센서는 계산상 동시에 측정한다.
+                        ->
+                        동일한 초음파 센서 사용으로 간섭 현상이 발생한다.
+                        ->
+                        (거리, 각도)에 따라 간섭을 확인했으나, noise를 걸러낼 수 없었고, 동시에 작동시키는 것을 포기한다.
+
+
+
+                        모터의 스텝딜레이가 모든 주행을 결정한다.
+                        모든 주행 함수는, 이 스텝딜레이를 한 번 결정한다.
+                        예를 들어 주행 함수 중 직진 함수는 지속적으로 스텝딜레이를 결정해야 한다.
+                    ->
+                    글의 내용 중 초음파의 특성이 있어.
+                    이 특성에 따라서 '초음파로는 90° 직각으로만 측정이 유효하고, 차량을 360° 제어하는 것이 불가능하다'가 돼.
+                    따라서 주행 방법을 다음과 같이 결정했어.
+                    ->
+                        1. 90° 직각으로만 움직이며, 움직이는 방향은 네 방향 뿐이므로, 이 조건에 의하면 벽을 따라서만 이동하는 방법 뿐이다. 따라서 오른쪽 벽을 따라 이동하는 것으로 한다. 이를 위해서 차체의 우측에 최대한 거리를 벌린 2초음파, 전방에도 2초음파를 둔다.
+                        2. 초음파 모듈 특성상, 차체는 벽과의 각도가 30° 정도 이하로 유지해야 한다. 그 이상을 넘어서게 되면, 돌이킬 수 없다. 절대로 넘어서는 안 되도록 설계해야 한다.
+                        3. 주행을 위한 집안의 조건으로는 '90° 이외의 구조 혹은 장애물/구조물이 있어선 안 된다', '스테퍼 모터의 스텝 수가 꼬일 수 있는, 혹은 넘을 수 없는, 턱이 있어선 안 된다'가 있어야 한다.
+                ->
+                주행 방법을 결정했으니, 이제 주행 로직을 짜야 해.
+                직진/좌회전/우회전 이렇게 세 개가 있어.
+                이 셋 모두 우측 벽과 수평으로 움직이고 있어야 한다는 조건이 있어.
+                따라서 '직진 로직'만 완성하면, 주행 로직은 사실상 끝인 셈이야.
+                다음은 직진 로직을 어떻게 짰는지 알려줄게.
+                ->
+                    우선 전체 코드의 일부만 가져왔어. 직진 주행 관련 코드야. 빠짐없이 자세하게 분석해봐. 분명 이해하는 데 충분할 거야.
+                    ->
+                        /*
+                        사용한 변수들은 모두 (double)ratio_stepperSpeed(1, 2)를 구하는 데에만 사용되기 때문에, 전부 double로 선언한다.
+                        차체의 위치 = 차체와 벽 사이의 거리 = dr1[0]
+                        */
+
+                        // const long targetLine = 150;       // 벽에서 유지선까지의 거리.
+                        // const double targetLineHalf = targetLine / 2.;
+                        // targetLine과의 거리가 thresh 이상이면 최대 기울기로 접근하고, thresh 이하라면 거리에 비례하여 기울기가 변경된다.
+                        const long slopeChangeThreshold = 70;
+
+                        const long rightSensorsSpacing = 150;        // 우측 2센서의 물리적 간격.
+                        const double maxSlope = 0.42 * (double)rightSensorsSpacing;
+
+                        long dTL = 0;       // distanceToTargetLine
+                        double targetSlope = 0.;
+                        double currSlope = 0.;
+                        double slopeDiff = 0.;       // (targetSlope - currSlope)
+
+                        inline void moveStraight()
+                        {
+                        // 목표 기울기 계산.
+                        dTL = (DR1 + DR2) / 2 - targetLine;
+
+                        if (slopeChangeThreshold <= dTL)
+                        {
+                            targetSlope = maxSlope;
+                        }
+                        else if ((-slopeChangeThreshold <= dTL) && (dTL < slopeChangeThreshold))
+                        {
+                            targetSlope = (double)dTL * maxSlope / (double)slopeChangeThreshold;
+                        }
+                        else if (dTL < -slopeChangeThreshold)
+                        {
+                            targetSlope = -maxSlope;
+                        }
+
+
+
+                        // 현재 기울기에서 목표 기울기로의 변화량 계산.
+                        currSlope = (double)DR1 - (double)DR2;
+
+                        // 최대 최소 지정.
+                        if (maxSlope <= currSlope)
+                        {
+                            currSlope = maxSlope;
+                        }
+                        else if (currSlope < -maxSlope)
+                        {
+                            currSlope = -maxSlope;
+                        }
+
+
+                        slopeDiff = targetSlope - currSlope;
+
+                        if (slopeDiff >= 0.)
+                        {
+                            ratio_stepperSpeed1 = 1.;
+                            ratio_stepperSpeed2 = 1. - slopeDiff * 0.7 / (2. * maxSlope);
+                        }
+                        else
+                        {
+                            ratio_stepperSpeed1 = 1. + slopeDiff * 0.7 / (2. * maxSlope);
+                            ratio_stepperSpeed2 = 1.;
+                        }
+
+
+
+                        updateStepDelays();
+
+
+                        // Serial.println(String(dTL) + "    " + String(targetSlope) + "\n" + String(dr1[0]) + "    " + String(dr2[0]) + "    " + String(currSlope) + "    " + String(slopeDiff) + "\n" + String(ratio_stepperSpeed1) + "    " + String(ratio_stepperSpeed2));
+                        // Serial.println(String(dr1[0]) + "    " + String(dr2[0]) + "            " + String(ratio_stepperSpeed1) + "    " + String(ratio_stepperSpeed2) + "\n");
+                        // Serial.println(String(dTL) + "    " + String(targetSlope) + "    " + String(currSlope) + "    " + String(slopeDiff) + "\n");
+                        }
+
+
+
+                        inline void updateStepDelays()
+                        {
+                        stepDelay1 = (unsigned long)((1. / (stepperSpeed1 * ratio_stepperSpeed1)) * (double)constStepDelay);
+                        stepDelay2 = (unsigned long)((1. / (stepperSpeed2 * ratio_stepperSpeed2)) * (double)constStepDelay);
+
+                        ocr3a_val = (uint16_t)(((double)stepDelay1 / 0.5) - 1.);
+                        ocr4a_val = (uint16_t)(((double)stepDelay2 / 0.5) - 1.);
+
+                        cli();
+                        OCR3A = ocr3a_val;
+                        OCR4A = ocr4a_val;
+                        sei();
+                        }
+
+                    말로도 설명해줄게.
+                    ->
+                    벽과의 거리를 일정하게 유지하며 가는 것이 최종 목적이야.
+                    직진에는 우측 2초음파가 쓰여. 이를 통해 차체의 '현재 기울기'와 '벽과의 거리'를 알 수 있어.
+                    2초음파는 차체 우측에서 가장 앞과 가장 뒤에 부착하여, 두 초음파가 최대한 멀리 있어야 해.
+                    왜냐하면, 두 초음파가 떨어져 있다는 것을 활용해 차체의 '현재 기울기'를 계산할 수 있거든.
+                    '현재 기울기'는 두 초음파 값의 차이로 계산해.
+                    '벽과의 거리'는 두 초음파 값의 평균으로 할 수 있는데, 결과적으로 이중 비례?로 계산해서 직진 보정이 너무 느려서, 보정하기 위해 앞쪽이나 뒤쪽 초음파 값으로만 사용할 수도 있어.
+                    목적을 다시 정리하자면, 벽과의 거리는 우리가 정의한 코드상의 targetLine(150mm)이어야 하고, 현재 기울기 값은 0이 되도록 만드는 거야.
+
+                    로직에는 크게 다음의 두 가지가 있어.
+                    ->
+                        1.
+                        현재 거리와 목표 거리(targetLine)의 차이에 따라, 차체의 목표 기울기를 결정해.
+                        거리 차이가 클 수록 목표 기울기는 커.
+                        2.
+                        물리적으로 차체가 순식간에 목표 기울기를 가질 수 없으니, 현재 기울기에서 목표 기울기로 차체를 회전시켜야 해.
+                        따라서 현재 기울기와 목표 기울기의 차이에 따라, 차체의 회전 속도를 결정해.
+                        기울기 차이가 클 수록 회전 속도는 커.
+                ->
+                설명 끝. 자세한 건 코드에서 확인해.
+
+
+
+
+
+
+
+        3. **팬 모터 + 먼지 센서 통합**  
+        - 먼지 센서(PMS7003)로 미세먼지 농도를 측정해서 FAN PWM 세기를 조절한다고 가정할 수 있는데, 실제로 그런 로직을 구현했는지?  
+        - 만약 가스 센서 수치도 높으면, FAN 회전수 달리한다든가, 다중 센서값을 통합해 팬을 제어하는 시나리오가 있는지 궁금합니다.
+        ->
+            로직 설명은, 코드로 대신할게. 코드를 빠짐없이 자세하게 읽어봐. 이해하는 데 충분할 거야.
+            그리고 이 코드는, 프로젝트 종료 후 cpp로 재구현한 코드니까 보기 편할 거야. 기존의 코드를 모듈화했을 뿐, 구현은 동일해.
+            ->
+                main.ino
+                ->
+                    #include "MyTouchSwitches.hpp"
+                    #include "MyPMS7003.hpp"
+                    #include "MyFanMotor.hpp"
+
+
+
+
+                    #ifndef CLAMP
+                    #define CLAMP(x, min, max) ((x) < (min) ? (min) : ((x) > (max) ? (max) : (x)))
+                    #endif // CLAMP
+
+
+
+
+
+
+
+                    constexpr uint8_t TOUCH_SWITCHES[4] = { 50, 51, 52, 53 };
+                    TouchSwitch touchSwitches(TOUCH_SWITCHES, 4);
+
+
+                    enum class FanMode : uint8_t {
+                        FAN_OFF = 0,
+                        FAN_LOW = 1,
+                        FAN_HIGH = 2,
+                        FAN_AUTO_FROM_PM_VALUES = 3
+                    };
+
+                    MyPMS7003 dustSensor(Serial1);
+
+                    FanMotor fanMotor(11, 12, 13);
+
+                    inline void applySwitchesToFanSpeed();
+
+
+
+
+
+
+
+
+
+                    void setup()
+                    {
+                        // dbg
+                        Serial.begin(9600);
+
+                        touchSwitches.init();
+                        fanMotor.init();
+                        dustSensor.begin(9600);
+
+                        fanMotor.powerOn();
+                    }
+
+
+                    void loop()
+                    {
+                        dustSensor.readRawDataFromPMS7003();
+                        if (dustSensor.isRawDataReceived())
+                        {
+                            dustSensor.processRawData();
+                        }
+
+                        touchSwitches.updateActiveSwitchIndexFromSensor();
+
+                        applySwitchesToFanSpeed();
+                    }
+
+
+
+
+
+                    inline void applySwitchesToFanSpeed()
+                    {
+                        static uint8_t lastSwitchStatus = static_cast<uint8_t>(FanMode::FAN_OFF);
+                        static FanMode fanMode = static_cast<FanMode>(lastSwitchStatus);
+
+                        uint8_t newSwitchStatus = touchSwitches.getActiveSwitchIndex();
+                        
+                        if (lastSwitchStatus != newSwitchStatus)
+                        {
+                            lastSwitchStatus = newSwitchStatus;
+                            fanMode = static_cast<FanMode>(newSwitchStatus);
+
+                            switch(fanMode)
+                            {
+                                case FanMode::FAN_OFF:
+                                    fanMotor.setFanSpeed(0);
+                                    break;
+                                case FanMode::FAN_LOW:
+                                    fanMotor.setFanSpeed(150);
+                                    break;
+                                case FanMode::FAN_HIGH:
+                                    fanMotor.setFanSpeed(255);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+
+                        // setFanSpeed - analogWrite 소요 시간은 대략 100us, 먼지 센서 업데이트는 1초에 1회이므로, 아래의 case에서 runtime은 1/10000이다. 게다가 setFanSpeed() 메서드에서도 같은 값이면 실행하지 않는다.
+                        if (fanMode == FanMode::FAN_AUTO_FROM_PM_VALUES)
+                        {
+                            if (dustSensor.isProcessedDataUpdated())
+                            {
+                                dustSensor.clearUpdatedFlag();
+                                
+                                // PM 최소최대값 수정할 수 있도록 인터페이스 추가하자.@@@@@@@@@@@@@@@@@@@@
+                                static constexpr uint16_t PM10_MIN = 20, PM10_MAX = 50;
+                                static constexpr uint8_t FAN_SPEED_MIN = 150, FAN_SPEED_MAX = 255;
+                                static constexpr double RATIO = static_cast<double>(FAN_SPEED_MAX - FAN_SPEED_MIN) / static_cast<double>(PM10_MAX - PM10_MIN);
+                                
+                                // pm10 값을 받아오고 clamping
+                                uint16_t pm10 = CLAMP(dustSensor.getPM10(), PM10_MIN, PM10_MAX);
+
+                                // pm10값 범위를 fanSpeed값 범위로 mapping하여 fanSpeed를 결정한다.
+                                uint8_t fanSpeed = static_cast<uint8_t>(
+                                    static_cast<double>(pm10 - PM10_MIN) * RATIO + static_cast<double>(FAN_SPEED_MIN));
+
+                                fanMotor.setFanSpeed(fanSpeed);
+                            }
+                        }
+                    }
+
+
+
+                "MyFanMotor.hpp"
+                ->
+                    #ifndef MY_FAN_MOTOR_HPP
+                    #define MY_FAN_MOTOR_HPP
+
+                    #include <Arduino.h>
+
+
+
+
+
+
+
+
+                    /*
+                        fanMotor : use timer1 PWM
+
+                        use motorDriver - L298N
+
+                    */
+                    class FanMotor
+                    {
+                    public:
+                        FanMotor(uint8_t _enaPin, uint8_t _dir1Pin, uint8_t _dir2Pin);
+                        void init();
+                        void powerOn();
+                        void powerOff();
+                        void setFanSpeed(uint8_t _speed);
+
+                        bool isPowered() const;
+                        uint8_t getFanSpeed() const;
+                        
+                        
+                    private:
+                        const uint8_t PIN_ENA;
+                        const uint8_t PIN_DIR1;
+                        const uint8_t PIN_DIR2;
+                        bool powerState = false;
+                        uint8_t fanSpeed = 0;
+                    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    FanMotor::FanMotor(uint8_t _enaPin, uint8_t _dir1Pin, uint8_t _dir2Pin)
+                        : PIN_ENA(_enaPin)
+                        , PIN_DIR1(_dir1Pin)
+                        , PIN_DIR2(_dir2Pin)
+                    {
+                    }
+
+
+                    void FanMotor::init()
+                    {
+                        pinMode(PIN_ENA, OUTPUT);
+                        pinMode(PIN_DIR1, OUTPUT);
+                        pinMode(PIN_DIR2, OUTPUT);
+
+                        analogWrite(PIN_ENA, fanSpeed);
+                        digitalWrite(PIN_DIR1, LOW);
+                        digitalWrite(PIN_DIR2, LOW);
+                    }
+
+
+                    inline void FanMotor::powerOn()
+                    {
+                        if (!powerState)
+                        {
+                            digitalWrite(PIN_DIR1, HIGH);
+                            digitalWrite(PIN_DIR2, LOW);
+                            powerState = true;
+                        }
+                    }
+
+
+                    inline void FanMotor::powerOff()
+                    {
+                        if (powerState)
+                        {
+                            digitalWrite(PIN_DIR1, LOW);
+                            digitalWrite(PIN_DIR2, LOW);
+                            powerState = false;
+                        }
+                    }
+
+
+                    inline void FanMotor::setFanSpeed(uint8_t _speed)
+                    {
+                        if (fanSpeed != _speed)
+                        {
+                            analogWrite(PIN_ENA, _speed);
+                            fanSpeed = _speed;
+                        }
+                        else
+                        {
+                            // 같으면 analogWrite를 실행하지 않는다.
+                        }
+                    }
+
+
+                    inline bool FanMotor::isPowered() const
+                    {
+                        return powerState;
+                    }
+
+
+                    inline uint8_t FanMotor::getFanSpeed() const
+                    {
+                        return fanSpeed;
+                    }
+
+
+
+
+
+
+
+                    #endif // MY_FAN_MOTOR_HPP
+
+
+
+                MyTouchSwitches.hpp
+                ->
+                    #ifndef MY_TOUCH_SWITCHES_HPP
+                    #define MY_TOUCH_SWITCHES_HPP
+
+                    #include <Arduino.h>
+
+
+
+
+
+
+
+                    /*
+                        ~~
+                    */
+                    class TouchSwitch
+                    {
+                    public:
+                        TouchSwitch(const uint8_t _pinNumbers[], uint8_t _pinCount);
+                        ~TouchSwitch();
+
+                        void init();
+
+                        // return current switch number
+                        uint8_t getActiveSwitchIndex() const;
+
+                        void setActiveSwitchIndex(uint8_t _index);
+
+                        // polling
+                        void updateActiveSwitchIndexFromSensor();
+
+
+                    private:
+                        static uint8_t* initPinArray(const uint8_t _pinNumbers[], uint8_t _pinCount);
+                        
+                        
+                    private:
+                        uint8_t* SWITCH_PINS;
+                        const uint8_t SWITCH_COUNT;
+                        uint8_t activeSwitchIndex = 0;
+                    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    TouchSwitch::TouchSwitch(const uint8_t _pinNumbers[], uint8_t _pinCount)
+                        : SWITCH_PINS(initPinArray(_pinNumbers, _pinCount))
+                        , SWITCH_COUNT(_pinCount)
+                    {
+                    }
+
+
+                    TouchSwitch::~TouchSwitch()
+                    {
+                        delete[] SWITCH_PINS;
+                    }
+
+
+                    void TouchSwitch::init()
+                    {
+                        for (uint8_t index = 0; index < SWITCH_COUNT; ++index)
+                        {
+                            pinMode(SWITCH_PINS[index], INPUT);
+                        }
+                    }
+
+
+                    inline uint8_t TouchSwitch::getActiveSwitchIndex() const
+                    {
+                        return activeSwitchIndex;
+                    }
+
+
+                    inline void TouchSwitch::setActiveSwitchIndex(uint8_t _index)
+                    {
+                        if (_index < SWITCH_COUNT)
+                        {
+                            activeSwitchIndex = _index;
+                        }
+                        else
+                        {
+                            // exception
+                        }
+                    }
+
+
+                    inline void TouchSwitch::updateActiveSwitchIndexFromSensor()
+                    {
+                        for (uint8_t index = 0; index < SWITCH_COUNT; ++index)
+                        {
+                            if (digitalRead(SWITCH_PINS[index]) == HIGH)
+                            {
+                                activeSwitchIndex = index;
+                                break;
+                            }
+                        }
+                    }
+
+
+                    uint8_t* TouchSwitch::initPinArray(const uint8_t _pinNumbers[], uint8_t _pinCount)
+                    {
+                        uint8_t* switchPins = new uint8_t[_pinCount];
+                        for (uint8_t index = 0; index < _pinCount; ++index)
+                        {
+                            switchPins[index] = _pinNumbers[index];
+                        }
+                        return switchPins;
+                    }
+
+
+
+
+
+
+
+
+
+
+
+                    #endif // MY_TOUCH_SWITCHES_HPP
+
+
+
+                MyPMS7003.hpp (먼지 센서 모델명이 'PMS7003'이야.)
+                ->
+                    #ifndef MY_PMS7003_HPP
+                    #define MY_PMS7003_HPP
+
+                    #include <Arduino.h>
+
+
+
+
+
+
+                    class MyPMS7003
+                    {
+                    public:
+                        MyPMS7003(HardwareSerial& _serial);
+
+                        void begin(uint32_t _baudRate);
+
+                        // polling
+                        void readRawDataFromPMS7003();
+                        
+                        // condition: rawDataReceived(true)
+                        void processRawData();
+                        
+                        void clearUpdatedFlag();
+
+                        bool isRawDataReceived() const;
+                        bool isProcessedDataUpdated() const;
+                        uint16_t getPM10() const;
+                        
+                        
+                    private:
+                        HardwareSerial& serial;
+                        static constexpr uint8_t PMS7003_BUFFER_LENGTH = 32;
+                        uint8_t recvBuffer[PMS7003_BUFFER_LENGTH] = { 0, };
+                        static constexpr uint16_t INVALID_PM_VALUE = 65535;
+                        uint16_t pm1_0 = INVALID_PM_VALUE;
+                        uint16_t pm2_5 = INVALID_PM_VALUE;
+                        uint16_t pm10 = INVALID_PM_VALUE;
+                        bool rawDataReceived = false;
+                        bool processedDataUpdated = false;
+                    };
+
+
+
+
+
+                    MyPMS7003::MyPMS7003(HardwareSerial& _serial)
+                        : serial(_serial)
+                    {
+                    }
+
+
+                    void MyPMS7003::begin(uint32_t _baudRate)
+                    {
+                        serial.begin(_baudRate);
+                    }
+
+
+                    inline void MyPMS7003::readRawDataFromPMS7003()
+                    {
+                        static uint8_t index = 0;
+                        static uint8_t currentByte = 0;
+
+                        while (serial.available())
+                        {
+                            currentByte = serial.read();
+
+                            // 2 bytes index(0, 1) = 0x424d  ->  PMS7003 dataPacket's header
+                            // 통신 오류로 데이터가 밀리면, index(0, 1)에서 header를 기다린다.
+                            if (index == 0 && currentByte != 0x42)
+                            {
+                                continue;
+                            }
+                            if (index == 1 && currentByte != 0x4d)
+                            {
+                                index = 0;
+                                continue;
+                            }
+
+                            recvBuffer[index++] = currentByte;
+
+                            if (index == PMS7003_BUFFER_LENGTH)
+                            {
+                                index = 0;
+
+                                rawDataReceived = true;
+                            }
+                        }
+                    }
+
+
+                    inline void MyPMS7003::processRawData()
+                    {
+                    pm1_0 = (static_cast<uint16_t>(recvBuffer[10]) << 8) + static_cast<uint16_t>(recvBuffer[11]);
+                    pm2_5 = (static_cast<uint16_t>(recvBuffer[12]) << 8) + static_cast<uint16_t>(recvBuffer[13]);
+                    pm10 = (static_cast<uint16_t>(recvBuffer[14]) << 8) + static_cast<uint16_t>(recvBuffer[15]);
+
+                    rawDataReceived = false;
+                    processedDataUpdated = true;
+                    }
+
+
+                    inline void MyPMS7003::clearUpdatedFlag()
+                    {
+                        processedDataUpdated = false;
+                    }
+
+
+                    inline bool MyPMS7003::isRawDataReceived() const
+                    {
+                        return rawDataReceived;
+                    }
+
+
+                    inline bool MyPMS7003::isProcessedDataUpdated() const
+                    {
+                        return processedDataUpdated;
+                    }
+
+
+                    inline uint16_t MyPMS7003::getPM10() const
+                    {
+                        return pm10;
+                    }
+
+
+
+
+
+
+
+
+
+                    #endif // MY_PMS7003_HPP
+
+            팬의 회전 강도는 오로지 먼지 값과 유저의 명령에만 의존해.
+            가스 센서 수치가 높은 건, 핵심 기능과 관련 없고, 부가적으로 부착한 기능일 뿐이야. 화재같은? 그러니 무시해도 돼. 핀이 남아서 기능을 하나씩 추가하는 과정에서 생긴 거라서.
+
+
+
+
+
+
+
+        1. **non-blocking 통신**  
+        - 이전 캡스톤1에서 사용한 Wi-Fi 코드를 확장했다고 했는데, “SW transmit buffer”를 구체적으로 어떻게 추가했나요?  
+        - 만약 `send()` 함수를 호출하면, 실제로는 버퍼에 쌓고 즉시 리턴한 뒤, **ISR** 혹은 **주기적 폴링**으로 보내는 식인가요?  
+        - “블록킹 없이 멀티 태스킹”을 할 때, 코루틴(co-routine)이나 상태 기계(state machine) 방식도 고려했는지?
+        ->
+            이것도 코드를 줄게. 코드 보고 이해해.
+            코드에 주석이 많은데, 주석은 무시해도 돼. 다만 주석 아닌 구현부는 빠짐없이 정확하게 봐.
+            ->
+                main.ino
+                ->
+                    // AT+CWMODE=2
+
+                    // AT+CWSAP="TESTmyAP1_206","1402020899",1,3
+
+                    // AT+CIPMUX=1
+
+                    // AT+CIPSERVER=1,50
+
+                    // AT+CIPSTO=7200
+
+
+
+
+
+
+                    #include "WiFiCommunicator.hpp"
+
+
+
+
+
+
+                    // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ endline
+
+
+
+
+
+
+
+
+
+
+
+
+                    uint32_t clk_main = 0;
+
+                    WiFiCommunicator wifiCommunicator(Serial1, clk_main);
+
+
+                    void setup()
+                    {
+                        Serial.begin(9600);
+
+                        wifiCommunicator.begin(9600);
+
+                        wifiCommunicator.wifiSetup();
+                    }
+
+
+
+                    void loop()
+                    {
+                        clk_main = micros();
+
+                        // wifiCommunicator.bufferCommand("send command");
+
+                        wifiCommunicator.recvData();
+
+                        wifiCommunicator.sendCommandToApp();
+                    }
+
+                        // AT_RESPONSE부터 확인하자.
+                            // if (Serial2.available())
+                            // {
+                            //     Serial1.write(Serial2.read());
+                            // }
+                        // if (Serial.available())
+                        // {
+                        //     Serial1.write(Serial.read());
+                        // }
+                        // if (Serial1.available())
+                        // {
+                        //     Serial.write(Serial1.read());
+                        //     wifiCommunicator.recvData();
+                        // }
+
+
+
+                        // /*
+                        //     PC입력 -> Serial2 입력. (2에게 명령.)
+                        // */
+                        // if (Serial.available())
+                        // {
+                        //     static char c1;
+                        //     c1 = Serial.read();
+
+                        //     if (c1 == '/')
+                        //     {
+                        //         static bool flag1 = true;
+                        //         if (flag1)
+                        //         {
+                        //             wifiCommunicator.bufferCommand("1");
+                        //             wifiCommunicator.bufferCommand("12");
+                        //             wifiCommunicator.bufferCommand("123");
+                        //             wifiCommunicator.bufferCommand("1234");
+                        //             wifiCommunicator.bufferCommand("12345");
+                        //             flag1 = false;
+                        //         }
+                        //     }
+                        //     else
+                        //     {
+                        //         Serial.write(c1);
+                        //         Serial2.write(c1);
+                        //     }
+                        // }
+
+                    /*
+                        디버그 코드로 무시하려고 했지만, 조건을 다시 짜야 한다.
+                        데이터 형식은 디버그 포함하여 세 가지
+                        ->
+                        1. ~~\r\n (dbg)
+                        2. \r\n~~\r\n (AT_RESPONSE)
+                        3. \r\n+IPD~~ (APP_COMMAND)
+                    */
+
+                    /*
+                        Wi-Fi module - ESP8266의 현재 firmware는, 수신받은 byte를 즉각 수신자에게 전송한다.
+                    */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    /*
+                        ATcommand 입력 딜레이가 존재해.
+
+
+                        송신 - ATcommand
+                        delay
+                        수신 - OK
+                        delay
+
+
+                        delay를 줄이거나 없앨 수 있는가?
+                        ->
+                        1.
+                        ATcommandSet을 사용하는 현재 firmware로는 불가능하다.
+                        Wi-Fi module - ESP8266의 firmware를 변경해야 한다.
+
+                        firmware 변경 없이 어떻게 해야 하는가?
+
+
+                        ->
+                        송신코드는 동시에 실행할 수 없으며, delay가 있다.
+
+
+                        ->
+                        주기적인 송신코드들은 공통 clock을 공유하고, 개별 실행 시각이 있으며, 서로 delay 이상의 시간 간격이 있다.
+
+                        비주기적인 송신코드의 실행은 주기적인 송신코드의 실행을 방해하는데, 어떻게 해결하는가?
+
+
+                        ->
+                        우선 다시 확인할 것들
+                        1.
+                        주기 송신의 시간 간격은 delay 이상이며, 여유 시간이 있다.
+                        1.
+                        주기 송신의 실행 시각은 정해져 있다.
+
+                        비주기 송신이 난입하면, 주기 송신의 정해진 실행 시각에 실행하지 못한다.
+
+
+                        ->
+                        주기 송신의 실행 시각은 지연된다.
+
+                        주기 송신의 실행 시각을 다시 스케줄링하여 원래 주기로 돌아가도록 조정한다.
+
+                        비주기 송신의 난입 실행도 더욱 어려워진다.
+
+
+                        ->
+                        방법
+                        1.
+                        지연이 되면 원래대로 조정하지 않고, 지연된 주기 그대로 실행한다.
+                        1.
+                        각 주기 송신의 실행 시각에 전체 지연 시간을 더하고, 앞으로의 주기 송신을 일찍 실행하는 것으로 지연 시간을 조금씩 소비한다.
+                        1.
+                        송신 조건 : !(송신중)
+                        송신 코드 실행  ->  queue의 rear(back)에 enqueue한다.
+                        송신 함수는 queue의 front에서 dequeue한다.
+                        원소는 5개 이상 쌓이지 않으므로, static array를 사용한다.
+
+
+
+
+
+                    */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    /*
+                    시리얼 모니터 : Both NL & CR, 115200baud -> 9600baud
+
+                    AT command :
+                    PC와 모뎀간의 통신에 사용하는 아주 간단한 commandSet이다.
+                    TCP/IP server/client 지원하고, ATcommand만으로 통신이 가능하다.
+                    ESP-01의 FW version이 높으면 더 넓은 제어가 가능하다.
+                    이외의 protocol(MQTT, HTTP(web), ...)을 사용하려면, ESP-01 보드의 firmware programming이 필수적이다.
+
+
+
+                    ㅡ 명령어 유형 4가지 :        // 없는 게 너무 많아. test는 CWMODE 말곤 하나도 없어. manual/parameter는 github에서 확인하자.
+                    <type>        <command format>        <description>
+                    test          AT+<x>=?                Query the set command or internal parameters and its range values.
+                    query         AT+<x>?                 Returns the current value of the parameter.
+                    set           AT+<x>=<...>            Set the value of user-defined parameters in commands and run.
+
+
+
+                    ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 기본 설정 및 network(AP/STATION mode) 설정.
+
+                    ㅡ AT+RST       // 단순 재부팅이며, 어떠한 설정도 초기값으로 변경되지 않는다.
+
+                    ㅡ AT+RESTORE       // 펌웨어 버전을 제외하고 모듈의 모든 설정을 초기화한다. (baudrate 포함 -> 115200)
+
+
+                    ㅡ AT+GMR        // Check version information
+
+
+                    ㅡ AT+UART_DEF=9600,8,1,0,0     // 모듈의 통신속도를 9600으로 변경.
+
+                    ㅡ AT+CWMODE=?        // :: +CWMODE:(1-3)        // 1. (STA)station mode (접속)    2. (AP)soft AP mode (로컬네트워크 형성)   3. STA+AP mode (접속도 하고, 네크워크도 열고,)
+
+                    ㅡ AT+CWMODE?       // 현재 명령어 모드 확인.
+
+                    ㅡ AT+CWMODE=1        // 명령어 모드를 1(STA)모드로 변경.
+
+                    ㅡ AT+CWLAP       // Browse accessible local network(Wi-Fi).    접속 가능한 AP 탐색
+
+                        e.g.
+                        +CWLAP:(3,"toxx",-80,"00:00:00:00:00:00",0,0,0,0,0,0,0)
+                        +CWLAP:(3,"LAAA",-35,"00:00:00:00:00:00",0,0,0,0,0,0,0)
+                        OK
+
+                    ㅡ AT+CWLAP="SSID"        // 특정 SSID(AP name) 조회.    대소문자 구별.
+
+                        e.g.
+                        AT+CWLAP="Laaa"
+
+                        ->  OK        // 조회 결과 없음.
+
+                        AT+CWLAP="LAAA"
+
+                        ->  +CWLAP:(3,"LAAA",-34,"00:00:00:00:00:00",0,0,0,0,0,0,0)
+                            OK        // 일치하는 AP 찾았음.
+
+                    ㅡ AT+CWJAP="SSID","PASSWORD"       // Wi-Fi 접속
+
+                    ㅡ AT+CWJAP?        // 접속 중인 AP 확인        // IP, MAC, 보안모드(1/2/3/4), 수신감도 등.
+
+                    ㅡ AT+CWQAP       // 접속 중인 AP 접속 해제
+
+
+
+                    ㅡ AT+CWMODE=2        // soft AP mode
+
+                    ㅡ AT+CWSAP?        // myAP 설정 확인
+
+                    ㅡ AT+CWSAP="SSID","PW","채널ID","ecn(encryption method; 암호화 방법)"        // myAP 설정.       // 채널ID는 무시하고 1로 설정.
+                        ecn - 0: OPEN    1: WEP    2: WPA_PSK    3: WPA2_PSK    4: WPA_WPA2_PSK    5: WPA2_Enterprise (AT can NOT connect to WPA2_Enterprise AP for now.)
+                        ="TESTmyAP1_206","1402020899",1,3
+
+                    ㅡ AT+CIFSR       // 자신의 STA/AP mode 각각의 IP, MAC, ... 확인
+
+                    ㅡ AT+CWLIF       // myAP에 접속한 client들의 IP/MAC 확인
+
+
+
+                    ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ unsorted
+
+                    ㅡ AT+FSR       // 로컬 IP 주소를 반환한다.       // 어떻게 쓰는거
+
+                    ㅡ AT+IPR=<통신 속도>       // ESP 모듈의 통신 속도를 설정한다.
+
+
+
+
+                    ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ server/client 설정.
+
+                    ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ common
+
+                    ㅡ AT+CIPSTATUS        // 연결 상태 및 정보를 반환한다.       // 접속확인유무로 사용할 수 있겠어. -> 확실해.
+
+
+
+                    ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ server
+
+                    ㅡ AT+CIPMUX=<mode>        // 다중 연결 활성화    // mode: 0_단일  1_다중
+                        AT+CIPMUX?        // 체크.
+                        mode=1
+
+                    ㅡ AT+CIPSERVER=<mode>,<portNumber>       // 지정된 포트번호로 서버를 활성화/비활성화       // 0_비활성화  1_활성화
+                        =1,10
+                        AT+CIPSERVER=0        // 서버 닫을 때 포트번호 없이. (어차피 열린 포트는 하나 뿐이니까.)
+
+                    ㅡ AT+CIPCLOSE=<channel ID>       // 특정 client의 연결을 해제한다.       // server에 들어오는 순서대로 "0, CONNECTED", "1, CONNECTED", ... 여기서 숫자가 채널ID.
+
+                    ㅡ AT+CIPSTO=<T_sec>        // client의 타임아웃을 설정한다.        // 데이터가 교류될 때마다 초기화된다.       // max=7200s=2h
+                        =7200
+
+
+
+                    ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ client
+
+                    ㅡ AT+CIPSTART=<protocol>,<원격 IP>,<원격 포트>        // server에 접속한다.
+                        ="TCP","192.168.4.1",10
+
+                    ㅡ AT+CIPCLOSE        // server와의 연결을 해제한다.
+
+                    ㅡ AT+CIPMODE=<mode>        // 전송 모드 설정.        // 0_정상(protocol)  1_투명(binary)       // 이건 데이터쪽으로 옮기자. -> 이게 주고받기 전 마지막 단계야. 이것도 그냥 여기에 포함해.
+
+
+
+                    ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ server-client 데이터 주고받기.
+
+                    ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ common
+
+                    // 양측 모두 보내기 전에 <AT+CIPSTATUS>로 연결 확인하고 보내.
+
+                    ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ server
+
+                    ㅡ AT+CIPSEND=<channel ID>,<length(byte)>
+
+                    ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ client
+
+                    ㅡ AT+CIPSEND=<length(byte)>
+
+                    e.g.
+                    -> SEND <- (client의 채널ID는 0이라고 한다.)
+                        AT+CIPSEND=0,10       // server
+                        (or)
+                        AT+CIPSEND=10       // client
+                        
+                        OK
+                        > (input string and ENTER: 123412341234)        // busy s...는 무시하고, (연결상태 확인) + (최소딜레이 추가)만 넣으면 되겠다.
+                        Recv 10 bytes
+
+                        SEND OK
+
+                    -> RECV <-        // 10bytes 이상은 짤림.
+                        +IPD,0,10:1234123412        // server
+                        +IPD,10:1234123412        // client
+                    
+                    ㅡ 전송 관련 규칙
+                    1. length 초과는 짤린다.
+                    2. length-3 이하부터는 한 번에 전송되지 않으며, 처음 전송에 lineFeed를 포함하여 데이터의 최대 길이는 length-2가 된다.
+                        전송 1: string1 + lineFeed
+                        전송 2: string2       // (string1 + string2) <= length-2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    /*
+                    < 단축키 >
+
+                    preferences (기본 설정)
+                    Ctrl ,
+
+                    compile
+                    Ctrl R
+
+                    upload
+                    Ctrl U
+
+                    toggle bottom panel
+                    Ctrl J
+
+                    keyboard shortcuts
+                    Ctrl Alt ,
+
+                    toggle sketchbook view
+                    Ctrl Shift B
+
+
+
+
+
+
+                    */
+
+
+
+                WiFiCommunicator.hpp
+                ->
+                    #ifndef WIFI_COMMUNICATOR_HPP
+                    #define WIFI_COMMUNICATOR_HPP
+
+                    #include <Arduino.h>
+
+
+
+
+                    /*
+                        bufferCommand()로 보낼 명령어를 입력하고, sendCommandToApp()으로 송신한다.
+                        recvData()로 수신한다.
+                    */
+                    class WiFiCommunicator
+                    {
+                    public:
+                        WiFiCommunicator(HardwareSerial& _serial, uint32_t& _clkMicros);
+                        void begin(uint32_t _baudRate);
+                        void wifiSetup();
+                        void bufferCommand(String _command);
+                        // polling
+                        void sendCommandToApp();
+                        // polling
+                        void recvData();
+
+
+                    private:
+                        void sendATCommandToESP8266(String _ATCommand);
+                        enum class RecvDataType : uint8_t {
+                            APP_COMMAND,
+                            AT_RESPONSE
+                        };
+                        void recvHandler(String _string, RecvDataType _recvType);
+                        
+                        
+                    private:
+                        HardwareSerial& mSerial;
+                        String mSendBuffer[10];
+                        uint8_t mSendBufferSize = 0;
+                        String mRecvBuffer[10];
+                        uint8_t mRecvBufferSize = 0;
+                        const uint32_t& mClkMicros;
+                    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    WiFiCommunicator::WiFiCommunicator(HardwareSerial& _serial, uint32_t& _clkMicros)
+                        : mSerial(_serial)
+                        , mClkMicros(_clkMicros)
+                    {
+                    }
+
+
+                    inline void WiFiCommunicator::begin(uint32_t _baudRate)
+                    {
+                        mSerial.begin(_baudRate);
+                    }
+
+
+                    inline void WiFiCommunicator::wifiSetup()
+                    {
+                        sendATCommandToESP8266("AT+CIPCLOSE=0");
+                        delay(1000);
+                        sendATCommandToESP8266("AT+CIPCLOSE=1");
+                        delay(1000);
+                        sendATCommandToESP8266("AT+CIPCLOSE=2");
+                        delay(1000);
+                        sendATCommandToESP8266("AT+CWMODE=2");
+                        delay(1000);
+                        sendATCommandToESP8266("AT+CWSAP=\"TESTmyAP1_206\",\"1402020899\",1,3");
+                        delay(2000);
+                        sendATCommandToESP8266("AT+CIPMUX=1");
+                        delay(1000);
+                        sendATCommandToESP8266("AT+CIPSERVER=1,50");
+                        delay(1000);
+                        sendATCommandToESP8266("AT+CIPSTO=7200");
+                        delay(1000);
+                    }
+
+
+                    inline void WiFiCommunicator::bufferCommand(String _command)
+                    {
+                        if (mSendBufferSize < 10)
+                        {
+                            mSendBuffer[mSendBufferSize++] = _command;
+                        }
+                        else
+                        {
+                            // exception
+                        }
+                    }
+
+
+                    inline void WiFiCommunicator::sendCommandToApp()
+                    {
+                        enum class SendingStage : uint8_t {
+                            STAGE1,
+                            STAGE2,
+                            STAGE3
+                        };
+                        static SendingStage sendingStage = SendingStage::STAGE1;
+
+                        static bool sending = false;
+
+                        static uint32_t clkATCommand, clkCIPSEND;
+
+                        static constexpr uint32_t INTERVAL_AT_COMMAND = 150000; // microsecond
+                        static constexpr uint32_t INTERVAL_CIPSEND = 50000; // microsecond
+                        // static constexpr uint32_t INTERVAL_TOTAL_SEND = INTERVAL_AT_COMMAND + INTERVAL_CIPSEND;
+
+
+                        switch (sendingStage)
+                        {
+                            case SendingStage::STAGE1:
+                            {
+                                if (mSendBufferSize && !sending)
+                                {
+                                    sendATCommandToESP8266("AT+CIPSEND=0," + String(mSendBuffer[0].length()));
+
+                                    sending = true;
+                                    clkATCommand = mClkMicros;
+
+                                    sendingStage = SendingStage::STAGE2;
+                                }
+                                break;
+                            }
+                            case SendingStage::STAGE2:
+                            {
+                                if ((mClkMicros - clkATCommand) > INTERVAL_AT_COMMAND)
+                                {
+                                    sendATCommandToESP8266(mSendBuffer[0]);
+
+                                    for (int i = 0; i < (mSendBufferSize - 1); ++i)
+                                    {
+                                        mSendBuffer[i] = mSendBuffer[i + 1];
+                                    }
+                                    mSendBuffer[mSendBufferSize - 1] = "";
+                                    --mSendBufferSize;
+
+                                    clkCIPSEND = mClkMicros;
+
+                                    sendingStage = SendingStage::STAGE3;
+                                }
+                                break;
+                            }
+                            case SendingStage::STAGE3:
+                            {
+                                if ((mClkMicros - clkCIPSEND) > INTERVAL_CIPSEND)
+                                {
+                                    sending = false;
+
+                                    sendingStage = SendingStage::STAGE1;
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+
+                    inline void WiFiCommunicator::sendATCommandToESP8266(String _ATCommand)
+                    {
+                        mSerial.println(_ATCommand);
+                    }
+
+
+                    inline void WiFiCommunicator::recvData()
+                    {
+                        /*
+                            server(board), client(app)
+
+                            수신 형태는 두 가지이다.
+
+                            0. serial monitor dbg: ~~~\r\n
+                            -> 무시한다.
+
+                            1. data packet from client: \r\n+IPD,<id>,<len>:<data>
+
+                            2. ATCommand response from Wi-Fi module: \r\n<ATResponse>\r\n
+                        */
+
+
+                        enum class RecvProcessStage : uint8_t {
+                            IDENTIFYING_DATA_TYPE,
+                            PARSING_DATA,
+                            PROCESSING_DATA
+                        };
+                        static RecvProcessStage currStage = RecvProcessStage::IDENTIFYING_DATA_TYPE;
+                        static bool shouldInitialize = false;
+
+                        static char recvChar = 0;
+                        static String recvString = "";
+                        static unsigned int endIndex = 0;
+
+                        static unsigned int colonIndex = 0;
+                        static unsigned int commaIndex = -1;
+                        static unsigned int dataLength = 0;
+
+                        static uint32_t clk_lastRecv = mClkMicros;
+                        static constexpr uint32_t INTERVAL_TIMEOUT_RECV_PER_BYTE = 50000;
+
+
+
+                        if (mSerial.available())
+                        {
+                            // init recv buffer - recv completed
+                            if (shouldInitialize)
+                            {
+                                shouldInitialize = false;
+                                recvString = "";
+                                currStage = RecvProcessStage::IDENTIFYING_DATA_TYPE;
+                            }
+
+                            // init recv buffer - timeout
+                            if ((recvString != "") && (mClkMicros - clk_lastRecv > INTERVAL_TIMEOUT_RECV_PER_BYTE))
+                            {
+                                recvString = "";
+                                currStage = RecvProcessStage::IDENTIFYING_DATA_TYPE;
+                            }
+
+
+                            // update clk_lastRecv for timeout
+                            clk_lastRecv = mClkMicros;
+
+
+
+                            // read byte
+                            recvChar = static_cast<char>(mSerial.read());
+                            recvString += recvChar;
+                            endIndex = recvString.length() - 1;
+
+                            // dbg
+                            // Serial.println(String((int)recvChar) + "    " + recvString);
+
+                            // process data
+                            switch (currStage)
+                            {
+                                case RecvProcessStage::IDENTIFYING_DATA_TYPE:
+                                {
+                                    if (recvString.endsWith("+IPD"))
+                                    {
+                                        currStage = RecvProcessStage::PARSING_DATA;
+                                    }
+                                    else if (recvChar == '\n')
+                                    {
+                                        // dbg__
+                                        if (recvString[0] != '\r')
+                                        {
+                                            // ignore data and init
+                                            shouldInitialize = true;
+                                            // Serial.println("@");
+                                        } else
+                                        // __dbg
+                                        if (endIndex != 1 && recvString[endIndex - 1] == '\r')
+                                        {
+                                            recvHandler(recvString.substring(2, endIndex - 1), RecvDataType::AT_RESPONSE);
+                                            shouldInitialize = true;
+                                        }
+                                    }
+                                    break;
+                                }
+                                case RecvProcessStage::PARSING_DATA:
+                                {
+                                    if (recvChar == ':')
+                                    {
+                                        int iLoop = 1;
+                                        while (1)               // 위험한 코드@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                                        {
+                                            if (recvString[endIndex - iLoop] == ',')
+                                            {
+                                                commaIndex = endIndex - iLoop;
+                                                break;
+                                            }
+                                            ++iLoop;
+                                        }
+                                        colonIndex = endIndex;
+                                        dataLength = static_cast<unsigned int>(recvString.substring(commaIndex + 1, colonIndex).toInt());
+                                        currStage = RecvProcessStage::PROCESSING_DATA;
+
+                                        // dbg
+                                        // Serial.println("    colon: " + String(colonIndex));
+                                    }
+                                    break;
+                                }
+                                case RecvProcessStage::PROCESSING_DATA:
+                                {
+                                    // dbg__
+                                    // Serial.println(static_cast<int>(recvChar));
+                                    // Serial.println("    end: " + String(endIndex));
+                                    // Serial.println("    end-colon: " + String(endIndex - colonIndex));
+                                    
+                                    if (endIndex - colonIndex == dataLength)
+                                    {
+                                        recvHandler(recvString.substring(colonIndex + 1), RecvDataType::APP_COMMAND);
+                                        shouldInitialize = true;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+
+                    inline void WiFiCommunicator::recvHandler(String _string, RecvDataType _recvType)
+                    {
+                        // dbg
+                        // Serial.println("enter the recvHandler() method");
+
+                        // C로 작성했던 코드 그대로 가져올까, 프로젝트 리빌딩할까,
+                        switch (_recvType)
+                        {
+                            case RecvDataType::APP_COMMAND:
+                            {
+                                // dbg
+                                Serial.println("APP_ " + _string);
+
+
+                                break;
+                            }
+                            case RecvDataType::AT_RESPONSE:
+                            {
+                                // dbg
+                                Serial.println("AT_ " + _string);
+
+
+                                break;
+                            }
+                        }
+                    }
+
+
+
+
+
+
+
+
+
+
+
+                    #endif // WIFI_COMMUNICATOR_HPP
+
+
+
+                이전 캡스톤1에는 '실시간'이 필요하지 않았어.
+                그런데 이번 캡스톤2에서는 '실시간'이 필요했고, 모든 면에서 blocking이 있어선 안 됐어.
+                따라서 이전 Wi-Fi 코드를 재사용할 때 non-blocking으로 재구현해야 했어.
+                SW transmit buffer를 구체적으로 어떻게 추가했는지는 위의 코드에 다 있으니, 코드를 보면 돼.
+
+                만약 `send()` 함수를 호출하면, 실제로는 버퍼에 쌓고 즉시 리턴한 뒤, **ISR** 혹은 **주기적 폴링**으로 보내는 식인가요?
+                ->
+                    이것도 코드를 보면 되고.
+
+                “블록킹 없이 멀티 태스킹”을 할 때, 코루틴(co-routine)이나 상태 기계(state machine) 방식도 고려했는지?
+                ->
+                    yield-resume이 필요할 정도로 런타임 리소스가 모자라지 않아. 코드상에서 오래 걸리는 기능이 거의 없어. 실제로 대부분 polling으로 할 정도로 리소스 충분하고.
+                    state-machine 방식을 통신의 송신과 수신 함수에서 사용하긴 했으나, 이는 non-blocking을 위한 건 아냐.
+                    송신에선 그냥 송신 절차를 구분하기 위함이고, 수신에선 응답 파싱을 위함일 뿐이야.
+
+                    if (사건 발생)
+                    {
+                        // 타이밍으로 delay를 사용.
+                        // 처리 과정에 delay를 사용해서, 처리할 때까지 대기함.
+                    }
+                    이건 일반적인 blocking 방식이고,
+
+
+                    if (타이밍으로 시간 재기. delay 대신 시간으로 타이밍 체크. or-operator '처리가 끝났음을 저장하는 변수')
+                    {
+                        // 처리 과정에 delay를 넣는 대신, 처리 과정을 저장하는 변수와 각 단계의 처리가 끝났음을 저장하는 변수를 만들어서, 처리 도중 CPU가 쉴 때 다른 일할 수 있게 함.
+                    }
+                    통신 뿐만 아니라 대부분 이런 식으로 구현했어.
+                    특별한 코딩 기술을 사용하진 않았어.
+
+
+
+
+
+
+
+        2. **stepper motor SW 타이밍 → Timer 전환**  
+        - 처음엔 SW 딜레이로만 구동했다가, “지연된 만큼 더 빠르게 동작” 보정 로직을 넣었다고 했는데, **구현 예**를 들면?  
+            - 예: “다른 모듈에서 5ms 늦었으면, 그만큼 스텝을 빠르게~” 같은 식인지?  
+        - 결국 Timer 기반으로 완전히 재작성했다 했는데, 그 과정에서 기존 코드를 대거 삭제했다면, **회귀 테스트**(기능 정상 확인) 어땠는지 궁금합니다.
+        ->
+            timer를 안 쓸 때, 어떻게 구현했는지, 흐름을 설명해줄게.
+            ->
+                우선, delay를 써서 stepper motor를 처음으로 구동해 봤어. 그리고 max stepping을 기록해뒀어.
+                ->
+                delay를 지우고 시간을 체크하는 non-blocking 방식으로 바꿨어. 여기서 잠재적인 문제를 찾았어.
+                만약 1500us마다 1step이라고 한다면, 실제 step 간격은 무조건 1500us 이상이 될 것이라 생각했고, 기능이 많이 없던 프로젝트 중간 지점인데도 1700us까지 확인이 됐어.
+                이건 1500us마다 step을 실행하는 게 아니니까, 반드시 수정해야 했어.
+                해결 방법은 다음과 같아.
+                ->
+                    1500us마다 실행돼야 하는데, 마침 그때 다른 일을 하고 있다면, 그만큼 밀린단 말이지?
+                    얼마나 밀리는지를 알아야 해.
+                    '실제 실행한 시간' - '1500us * 여태 밟은 step 수' = '밀린 시간'
+                    이제 밀린 시간을 알았으니, 이만큼 어떻게 실행할지 방식을 결정해야 해.
+                    ->
+                    stepper motor의 step loss 원인 두 가지: high speed operating, sudden load change.
+                    1500us보다 더 빨리 실행해야 하지만 step loss가 돼선 안 돼.
+                    '밀린 시간' / '1500us' = '밀린 step 수'
+                    '밀린 step 수' >= 1이라면, 미리 측정해 둔 max 값 이내로 stepping을 한다는 조건 하에, stepping 속도를 대강 20~30% 정도로 과하지 않게 증가시켜.
+                    step 수가 몇 개 이상 밀리는 일도 없을 뿐더러, 많이 밀려도 우리가 보기에 시간상 순식간이라 티도 안 났어.
+                    하지만 잠재적으로 더욱 정확한 stepping이 필요하다고 생각했어.
+
+
+            "결국 Timer 기반으로 완전히 재작성했다 했는데, 그 과정에서 기존 코드를 대거 삭제했다면, **회귀 테스트**(기능 정상 확인) 어땠는지 궁금합니다."
+            ->
+                두 stepper motor에 두 개의 timer를 할당하며 timer 기반으로 코드를 작성하고 교체하는 건 순식간이었고, 테스트는 성공이었어. 타이밍이 매우 정확했고, 매우 깔끔하게 굴러가더라.
+                그리고 동시에 HW 자원 분배 설계를 시작했지.
+
+
+
+
+
+
+
+        3. **메모리·코드 관리**  
+        - MEGA라 해도, 여러 센서/모듈/통신 코드를 합치면 `FLASH`(프로그램 메모리)나 `SRAM`에 부담이 가지 않았나요?  
+        - “각 기능이 실행되지 않을 땐 최소한의 검사만” 이라 했는데, 구체적으로 어떤 구조? (예: `if (flagX) {functionX();}` 식?)
+        ->
+            "MEGA라 해도, 여러 센서/모듈/통신 코드를 합치면 `FLASH`(프로그램 메모리)나 `SRAM`에 부담이 가지 않았나요?"
+            ->
+                너무나도 넉넉했어. 라이브러리나 외부 코드를 거의 안 써서 그럴 거야.
+
+            "“각 기능이 실행되지 않을 땐 최소한의 검사만" 이라 했는데, 구체적으로 어떤 구조? (예: `if (flagX) {functionX();}` 식?)"
+            ->
+                내가 올린 대부분의 코드에서 확인할 수 있어.
+                main 함수에서 polling으로 실행하는 함수 내부를 보면 될 거야. 웬만한 변수는 전부 함수 내부 static 선언했고, 조건 확인도 최대한 다계층으로 설계했거든.
+
+
+
+
+
+
+
+
+        1. **맵 작성 로직**  
+        - 스텝 수를 기반으로 공간 지도를 만든다고 했는데,  
+            - (a) 시작점(0,0)을 기준으로 전진 시 x 좌표 증가, 회전 시 각도 바뀌면 그 후 전진 시 다른 좌표로 이동?  
+        - 초음파 센서로 벽까지 거리 측정 → 매핑한다는 개념인지, 아니면 단순히 전진 오차 보정 용도인지?  
+        - “실시간 차체 위치 계산”을 구체적으로 어떻게? 삼각측량? 단순 데드레코닝?
+        ->
+            "시작점(0,0)을 기준으로 전진 시 x 좌표 증가, 회전 시 각도 바뀌면 그 후 전진 시 다른 좌표로 이동?"
+            ->
+                이해하고 있는 게 맞아.
+                x방향 값은 -1과 +1이 있고, y방향 값도 -1과 +1이 있어. 총 네 방향 값을 가져.
+                그에 따라 동일하게 stepping할 때 x 혹은 y인지, 그리고 그의 방향 값을 곱해서 좌표 값에 추가해.
+                명령을 다 해서 충전대(시작점)에 도착하거나, 혹은 명령 중에 충전대를 지나간다면, (0, 0)으로 초기화 돼.
+
+            "초음파 센서로 벽까지 거리 측정 → 매핑한다는 개념인지, 아니면 단순히 전진 오차 보정 용도인지?"
+            ->
+                우측 2초음파는 단순 전진 오차 보정과 우회전 용도이고, 전방 2초음파는 좌회전 용도야.
+
+            "“실시간 차체 위치 계산”을 구체적으로 어떻게? 삼각측량? 단순 데드레코닝?"
+            ->
+                삼각측량은 직진 보정 알고리즘에서 우측 벽과의 거리를 측정할 때, 벽에 대해 차체의 휘어진 각도에 따라서 거리 값을 더 정확하게 계산하기 위한 용도야. 차체 위치 계산과 매핑과는 관련 없어.
+                데드레코닝(추정)까지 말할 건 없고, 단지 매핑 기능에서 계산한 좌표 값을 APP에 보내고(보내기 전에 APP의 canvas 해상도에 맞춰서 축소해서 보내.) APP의 canvas에 표시할 뿐이야.
+
+
+
+
+
+
+
+
+        2. **초음파 2개로 직진 보정**  
+        - 보통 자율 주행 로봇은 좌우 2개 초음파로 “두 벽까지 거리 차이”를 측정해 평행 이동을 유지하는데, 이때 “곡면/기둥” 등 환경 변화가 있으면 오작동 우려는 없었는지?
+        ->
+            주행에 대해 여러 조건을 적은 적이 있으니, 그걸 다시 보면 돼.
+            초음파 센서 특성상 90°로만 움직일 수밖에 없다는 내용이 있을 거야.
+            자이로 센서도 없이 고작 4초음파로 불가능해.
+
+
+
+
+
+
+
+        3. **라인 IR 센서**  
+        - 라인 IR 센서가 “집(충전 위치)”를 대신한다고 했는데,  
+            - 만약 바닥에 검은색 테이프를 붙여서 **라인 추적**을 구현한다면, 이 라인이 “어디까지 유도”하는가?  
+            - “자율 주행”과 “라인 추적”이 함께 쓰일 때, 서로 우선순위나 모드 전환은 어떻게 이뤄지는지?
+        ->
+            충전대는 정확한 위치가 있기 때문에 라인 추적과 자율 주행이 함께 쓰이냐는 질문인 것 같은데,
+            충전대를 어떻게 대체했는지를 설명해주면 답변에 도움이 될 것 같아.
+            다시 말하지만, 충전대는 실제 충전대를 구현한 것이 아니므로, 충전대를 대체하여 구현한 것은 프로젝트에서 중요한 게 아니야.
+            ->
+            충전대는 정확한 위치가 있어. 그러므로 대체한 원점도 차체가 집을 물리적으로 항상 정확한 위치에 정차하도록 구현하면 좋아.
+            왜냐하면 원점이 틀어지면 그만큼 매핑에 오차로 들어가고, APP에서 특정 위치에서 공기청정 기능을 명령할 때 오차가 크면 그 특정 위치가 도달할 수 없는 곳이 될 수도 있어.
+            ->
+            우선 간편하게 검은색 바닥과 라인트레이서용 적외선 센서로 집을 만들었어.
+            정확한 위치는 어떻게 구현했냐면,
+            ->
+            우선 충전대를 집안의 어느 꼭짓점으로 선정했어.
+            차체는 90°로만 움직이기 때문에, 꼭짓점에서 반드시 회전을 하거든.
+            차체가 충전대에 근접할 때부터 충전대에서 회전할 때까지, 검은 바닥을 인식하기에 충분한 시간이야.
+            직진 주행은 정확한 건 아니므로, 충전대에 근접하여 회전할 때 2cm 정도의 오차가 생겨. 이 정도의 오차는 괜찮아.
+            ->
+            너의 질문은 이 프로젝트에서 의미가 없다고 생각해. 그래도 충전대를 어떻게 대체하여 구현했는지는 설명해봤어.
+
+
+
+
+
+        1. **Timer & 모듈 분배가 늦게 이뤄졌다**  
+        - 초반에 HW 자원 설계를 안 했는데, 왜? (시간 부족? 경험 부족?)  
+        - “그대로 갔으면 큰 오차”라고 했는데, 실제로 한두 번은 큰 사고(주행 코스 완전 어긋남) 같은 사례가 있었는지?
+        ->
+            "초반에 HW 자원 설계를 안 했는데, 왜? (시간 부족? 경험 부족?)"
+            ->
+                이유를 어디에 적었을 텐데. 잘 찾아봐. 없으면 나한테 말해.
+
+            "“그대로 갔으면 큰 오차”라고 했는데, 실제로 한두 번은 큰 사고(주행 코스 완전 어긋남) 같은 사례가 있었는지?"
+            ->
+                사고는 없었어. 단지 프로젝트 마무리 때 얼마나 많은 다기능이 포함될지 모르고, 그만큼 step이 많이 밀릴 테니까.
+                걱정할 정도까지는 아니었지만, 그래도 잠재적 문제는 맞으니, timer를 쓰기로 결정했어.
+                주행 코스 어긋난 일들도 전부 내 코드 때문이었고.
+
+
+
+
+
+
+
+        2. **SW 분할구현 실패**  
+        - “하나의 소스파일로만 작업” → 어느 시점, 어떤 규모(몇천 라인)쯤 문제가 되기 시작했나요?  
+        - C++/cpp 실력 향상이라 했는데, 어떤 식으로 라이브러리 분할을 나중에 진행했는지(예: Motor.cpp, Sensor.cpp 식?)?
+        ->
+            "“하나의 소스파일로만 작업” → 어느 시점, 어떤 규모(몇천 라인)쯤 문제가 되기 시작했나요?"
+            ->
+                코드가 2천 줄을 넘어서면서, 변수명 네이밍도 힘들어지고, 또 원래는 정의 추적하거나 헤더파일로 쉽게 넘어가서 수정하는데, 그 대신 마우스 스크롤을 자주 해야 했어.
+
+            "C++/cpp 실력 향상이라 했는데, 어떤 식으로 라이브러리 분할을 나중에 진행했는지(예: Motor.cpp, Sensor.cpp 식?)?"
+            ->
+                어떤 식으로 했는지는 내가 준 코드들을 보면 돼.
+                구현은 hpp에 전부 했고, 굳이 cpp파일로까지 정의를 옮겨서 분할할 필요는 없었어.
+                게다가 arduino IDE 구조상 그게 힘들어. hpp에 다 때려박는 게 편해.
+
+
+
+
+
+
+
+        1. **기존 ‘서빙로봇’ 실패 팀**과의 협업  
+        - 그 팀의 기계적 차체 노하우는 어떤 식으로 이어받았나요? (예: 바퀴·모터 장착, 섀시 디자인)  
+        - 본인은 SW + Wi-Fi + 센서 제어를 맡아 “큰 스케일의 작품”을 달성했다고 했는데,  
+            - 혹시 팀원들이 “이건 너무 많다, 다 못 담는다”라고 반대하진 않았는지?
+        ->
+            팀장은 코딩을 나만큼은 아니지만 어느 정도 할 줄 알아. 그리고 이전 캡스톤1에서도 팀장이었어.
+            나를 제외하고 팀원들 중 코딩을 할 줄 아는 사람은 없었고.
+            팀장 역할: 프로젝트 주제에 맞게 어떤 기능을 추가해서 어떤 작품을 만들면 좋을지, 지속적으로 팀원들과 얘기함. 이 과정에서 나온 요구사항들을 가지고 과연 구현이 가능할지, 한다면 코드를 어떻게 설계해야 할지에 대해서 나와 얘기함.
+            나: 사실상 프로젝트 전부라고 할 수 있는, 구현부를 오로지 나 혼자 작업함.
+
+            기계적 차체 노하우를 내가 이어받았다고 말하는 건 좀 아니고, 나는 단지 팀원으로서 내 역할만 했을 뿐이야.
+            차체 제작에 내가 일부 관여하긴 했지만, 코딩 외에 모든 것은 팀장과 팀원들이 다 했어.
+            그래서 난 잘 모른다고 할게. 알긴 아는데.
+
+            '이건 너무 많다, 다 못 담는다'
+            ->
+                기계적 측면으로, 차체 크기에 비해 다기능을 위한 모듈 탑재가 힘든 건 전혀 아니었어.
+                코드 설계 측면에서, 나 혼자 했으니 반대라고 논할 것도 없고.
+
+
+
+
+
+
+
+        2. **팀장과 함께 코드 구조 설계**  
+        - 팀장이 코딩 가능하다 했지만, “실력 차이가 명백” → 결국 본인이 대부분 맡았다고 했는데,  
+            - 협업 시 코드 리뷰나 문서 공유는 어떻게?  
+            - “이해 못 하면 내가 코딩한다” 식으로 진행된 건지, 아니면 구조 합의 후 일부 구현 분배라도 했는지?
+        ->
+            코드 리뷰와 문서 공유는 할 필요가 없었어.
+            단지 그들의 요구 사항에 맞춰 최대한 구현할 뿐이며, 그 작업과 진행도는 반드시 팀장에게 알려야 했어.
+            그걸 고려해서 프로젝트 전체를 총괄할 수 있거든.
+
+            일부 구현 분배조차 하지 않았어.
+            팀장은 코드에 손을 대지 않도록 처음부터 팀장과 얘기했어.
+            팀장의 이전 캡스톤1 작품을 내가 도와줘서 잘 아는데, 수준 차이를 말하지 않으면 안 될 정도로 차이가 심했고, 또한 구현하고자 하는 주제가 실질적으로 고난이도를 요구했어.
+            '팀장이 코딩에 손 대면 오히려 망한다'는 사실이었고, 그래서 처음부터 팀장과 말을 맞춘 거야. 내가 다 하는 걸로.
+            하지만 무엇을 어떻게 만들지 요구 사항에 대해서는 아주 잘 알고 있었고, 따라서 코드 설계에는 일부 도움이 됐어.
+            상대방이 기분 나쁠 수도 있지만, 친한 사이여서 괜찮았고.
+            그럼에도 이렇게 할 수밖에 없는 이유가, 선정한 주제가 너무 고난이도여서 내가 오로지 코딩에만 집중할 수 있는 환경을 만들어야 했어.
+
+            팀장과 '이전 캡스톤1 때 팀장으로서 진행해 본 나'와의 딜이라고 생각하면 돼.
+
+
+
+
+
+
+
+
+        1. **먼지 센서 + FAN 전략**  
+        - 먼지 센서가 측정한 PM수치에 따라 FAN RPM(회전수)을 조정하거나, “더 높은 흡입력 모드”를 켤 수 있나?  
+        - 그냥 ON/OFF만 구현된 건지, 혹은 PWM으로 속도 제어까지 가능하게 했는지?
+        ->
+            코드 올렸었는데. 그걸로 봐. 총 네 단계야. 인터페이스는 물리적 4터치센서와 APP이 똑같아.
+
+
+
+
+
+
+
+
+        2. **가스 센서**  
+        - 어떤 가스(알코올, VOC 등) 측정하는 모델인지? (MQ-5, MQ-135?)  
+        - 실제로 어느 정도 민감도인지, 프로젝트에서 가스 감지 후 어떤 액션(알람, FAN 가동?)을 했는지?
+        ->
+            가스 센서 - MQ-2
+            ->
+                LPG, 메탄, 부탄 등의 가연성 가스.
+
+                내부 히터 가열.
+
+                heater resistance : (31 +- 3)Ohm
+                -> 전류량은 대략 150mA
+
+                heater consumption : <= 900mW
+                -> 나누기 5V
+                -> 전류량 180mA 이하.
+            ->
+            가스 센서를 처음에 생각해뒀는데, 기능 추가하기가 쉬운 거라서, 핵심부터 완성하고 추가할 생각이었어.
+            그러나 시간 문제로 추가하지 못했어. 뭐, 그냥 추가하면 되는 거라서 큰 문제는 없어.
+            
+            추가한다면 우선 목적은 화재 혹은 가스 누출과 같은 비상 상황이니, 코드와 APP에서 1순위로 실행하도록 설계하겠지?
+
+
+
+
+
+
+
+
+        3. **기울기 센서**  
+        - 차체가 “몇도 이상 기울어지면 긴급정지” 같은 로직인가?  
+        - 만약 걸림턱 등으로 기울어진다면, 어떻게 복구 or 재시작 처리했는지?
+        ->
+            이것도 가스 센서와 마찬가지로 쉽게 추가할 수 있는 기능이었고, 시간 문제로 추가하지 못했어.
+
+            만약 추가한다면, APP에 복구/재시작 인터페이스를 추가하겠지?
+            하지만 차체를 직접 세워야 해. 우린 로봇이 아니라서.
+            로봇청소기로 비유하자면, 뒤집어 놓은 셈이야.. 현재 로봇청소기도 스스로 자기 몸을 못 뒤집어.
+
+
+
+
+
+
+
+
+        1. **자율 주행 고도화**  
+        - 초음파만으로 맵핑·보정한다고 했는데, IR 거리 센서나 SLAM(LiDAR) 같은 고급 방법도 고려했나요?  
+        - 스텝퍼 모터 위치 오차 누적을 장기적으로 해결하려면, 다른 센서(엔코더, IMU)와 융합하면 어떨지?
+        ->
+            LiDAR는 언급했었고.
+            SLAM이라는 개념에 대해서 우선적으로 학습을 했어.
+            개념을 활용해서 구현에 보탬은 됐는데, 그 자체적인 알고리즘이나 라이브러리를 사용하지는 못했어. 4초음파로 주행하는 우리와는 원리가 달라서.
+
+            "스텝퍼 모터 위치 오차 누적을 장기적으로 해결하려면, 다른 센서(엔코더, IMU)와 융합하면 어떨지?"
+            ->
+                step 수를 직접 매핑에 사용하고, 엔코더와 같은 피드백 시스템은 설계하기 매우 힘들었어. 사실 피드백 시스템 설계가 프로젝트 급이라서.
+
+
+
+
+
+
+
+        2. **IoT 백엔드 연동**  
+        - 현재는 “ESP8266 (AT Command) + 앱 직통” 방식인데, 만약 MQTT나 HTTP 서버를 만들었다면, 원격 모니터링·로그 저장에 유리하지 않았을까?  
+        - 공기청정 로봇을 여러 대 운영할 때, 각각의 데이터(먼지, 주행 상태)를 클라우드 서버에 모아 AI 분석할 수도 있는데, 계획했는지?
+        ->
+            MQTT와 HTTP를 사용하려면, ESP8266 펌웨어 변경 및 arduino 보드에서의 라이브러리/사용법 변경을 해야 해.
+            '어마무시한 학습 시간 및 프로젝트/임베디드 주제와 조금 벗어났음' + '그 둘을 고려하지 않을 정도로 규모가 작고 필요성이 없었음'
+            두 가지 이유로 AT Command와 그에 내장된 TCP 프로토콜을 사용했어.
+            자세한 건 3-2 캡스톤1에 대해 너가 준 면접 질문들에 대한 나의 답변에 상세하게 적혀있는데, 기억하려나 모르겠다.
+
+
+            공기청정 로봇을 여러 대 운영할 때, 각각의 데이터(먼지, 주행 상태)를 클라우드 서버에 모아 AI 분석할 수도 있는데, 계획했는지?
+            ->
+                사용자 인터페이스 계획에 '사용자 경험에 따른 공기청정 자동화' 기능이 있었지만, 구현하기에 시간이 없었어.
+                그리고 AI 분석할 정도가 전혀 아니야. 너무 소규모고 너무 쉬웠어.
+
+
+
+
+
+
+
+        3. **상용화·제품화**  
+        - 실제 상용 로봇 청정기와 비교하면, 센서 정밀도·주행 안전성, 충전 스테이션 자동 도킹 등 보완점이 많을 텐데, 어떤 점이 가장 우선 과제라 생각하나요?  
+        - 혹시 실험실(또는 집)에서 실제로 **먼지 줄어드는 효과**를 측정해 본 적 있는지(팬 성능), 그 결과는 어떠했는지?
+        ->
+            이 질문부터는 일부 답하지 않을게. 이력서의 프로젝트 사항 관련 표를 채우기 위해서 우리가 지금 이러고 있는 건데, 이 이상은 의미가 없어.
+
+
+
+
+
+
+
+        1. **테스트 시나리오 구체화**  
+        - 로봇이 방 모서리나 가구에 부딪히진 않는지, 초음파가 측정 못하는 사각지대는 없었는지?  
+        - 팬 모터 동작 시 진동·전류 변동이 주행에 영향을 주진 않았는지?
+        ->
+            전원 및 회로 설계는 우리 전자공학과 전문이라. 문제 없었어.
+
+
+
+
+
+
+        2. **리소스·성능 측정**  
+        - MEGA가 여러 센서·모터·통신을 동시에 돌릴 때, CPU 점유나 루프 주기가 어느 정도였나요?  
+        - non-blocking 구현이라 해도, 최악 상황(모든 센서+통신+주행 동시)에 프레임(주기)이 200Hz 정도 유지되는지, 아니면 훨씬 낮아지는지?
+        ->
+            루프 주기라면 평균적인 1loop 실행 시간을 말하는 건가?
+            CPU 점유는 널널했고, 아무 조건도 해당되지 않을 때 mainLoop 1회가 100us 정도였어.
+            통신에서 문자열 전송하는 거 아니면, 200us 이상 걸리는 기능이 없을걸.
+            최악 상황을 생각할 필요도 없는 게, 아무리 최악인 상황을 생각해도 몇 ms 뿐이라서.
+            너는 main loop 1cycle 1ms가 1000Hz라고 보는 건가? 그렇다면 200Hz는 1cycle/5ms라는 건데, 턱도 없어. 걱정할 게 아니야.
+
+
+
+
+
+
+
+
+        면접 질문에 대한 답변 이외의 추가 정보들
+        ->
+            1.
+                3-2 과캡스톤(캡스톤디자인 = 캡디)1에서 내 팀에서 나는 팀장이었고, 원격 제어를 주제로 진행했어.
+                그리고 3-2 과캡스톤1에서 어느 팀이 서빙로봇, 그리고 자율주행을 구현하고자 했는데, 자울주행을 망쳤어. 내가 보기에 여러모로 부족했던 걸로 기억해.
+                그리고 내 3-2때의 팀원들은 거기까지만 했고, 4-1때 서빙로봇 팀이 그대로 유지됐고, 나는 거기에 팀장에게 얘기해서 팀원으로 들어갔어.
+
+
+
+    나의 답변을 토대로 너가 정리한 내용에 일부 틀린 내용이 있어, 수정하거나 추가하길 원하는 내용
+    ->
+        내용
+        ->
+            집 안을 돌아다니며 먼지·가스를 측정하고, 필요 시 공기 청정 팬을 작동.
+            일정 조건(시간, 먼지량 등)에서 원하는 지점으로 이동 or 해당 지점에 고정하여 공기 청정 수행.
+            ->
+                집 안을 돌아다니며 먼지·가스를 측정하지는 않아.
+                최초 1회 매핑 이후 APP에서 공기청정 명령을 내릴 수 있는데,
+                어느 위치의 먼지·가스량 정보는 없고, 단지 명령은 크게 '맵 전체를 지정한 속도로 (일반적으로 천천히) 움직이며 공기청정' 명령과 '지정한 위치로 가서 공기청정' 명령으로 두 가지가 있어.
+
+
+
+
+
+
+            “분산 보드”나 “ROS” 같은 대안은 학습·구현 부담이 크고, 이 프로젝트 규모(학부 수준)엔 과하다고 판단.
+            ->
+                ROS는 맞는데, 분산 보드는 아니야.
+                분산 보드는 어려워서 선택하지 않은 게 아니라, 오히려 단일 보드로 진행하다 막히면 곧바로 보드를 추가해서 분산 보드로 구현할 생각인 만큼, 프로젝트를 편하게 가는 길이었어.
+                이외에 분산 보드를 선택하지 않은 다른 이유를 적었는지 모르겠는데, 잘 찾아봐.
+                아마 '대부분의 임베디드 기기는 단일 보드이기 때문에, 우리도 단일 보드로 하려고 했다'와 같은 내용을 적었을 건데.
+
+
+
+
+
+
+            주행 센서 결정
+            LiDAR(비싸고 추가 학습 필요), IMU(추가 구현 부담) 대신 4개의 초음파 센서를 택함.
+            이유: “학습 시간이 한정” + “기존 서빙 로봇 섀시에 초음파 장착이 비교적 간단” + “직각(90°) 주행으로 제한하면 가능”.
+            ->
+                맞는 내용이고, 4초음파를 선택한 이유에 하나를 더 추가할게.
+                ->
+                이전 서빙로봇이 주행 기술에 초음파를 사용했기 때문에, 이전 프로젝트를 성공시키고자 초음파를 다시 선택한 이유도 있어.
+
+
+
+
+
+
+            처음에는 HW 자원 설계 없이 진행
+            “MEGA면 충분히 남겠지”라는 안일한 생각 → 스텝퍼·팬·LED·부저·Wi-Fi 등 모듈이 계속 추가되며, 나중에 Timer/핀 배분 문제가 대두.
+            ->
+                틀렸어.
+                안일한 생각이 아니라, 누가 봐도 남아돌았어.
+                아무리 프로젝트를 대규모로 한다고 해도, 그래봤자 학부 수준이며, 객관적으로 혼자 3개월치 코드를 짜는 정도로는 사실 대규모도 아니고.
+                같은 이유로 런타임과 메모리 리소스도 매우 여유로울 것이라 예상했어.
+                MEGA의 핀은 무려 50개 정도로 아주 충분해.
+                그리고 timer에 대해서는 다음의 내용을 읽어.
+                ->
+                    초기에 stepper motor의 step 타이밍을 SW적으로 제어하다가 timer를 할당해주고 기존의 코드를 갈아 엎었는데,
+                    그 이유가 '확고한 문제가 발생'한 것이 전혀 아니라, '잠재적 문제'를 위해서였어.
+                    잠재적이라고 해도 사실 안전한 수준이었는데, timer가 남아서 그냥 timer를 할당해 준 거야.
+                    그러니 timer가 모자라는 것도 아니었어.
+
+
+
+
+
+
+
+            스텝퍼 모터 초기 구현(소프트웨어 딜레이)
+            처음엔 delay() 또는 “millis()-기반 블록킹 방식”으로 스텝 간격 조정.
+            “딴 작업 때문에 몇 ms 밀리면, 밀린 시간만큼 속도 빠르게” 보정 로직을 넣으려 했으나, 탈조 위험·정밀도 한계가 존재.
+            ->
+                처음에 delay() 등으로 구현한 이유는, 단지 내가 stepper motor를 처음 써봐서, 동작을 어떻기 시키는지 방법을 확인하고자 했던 방법이야.
+                뭐든 처음 다룰 땐, 딜레이도 넣고 뭐든 다 넣어서 동작부터 시키잖아?
+                여튼, 동작을 확인한 즉시, '프로젝트 처음부터 계획한 non-blocking 방식'으로 구현했어.
+
+                탈조 위험·정밀도의 한계가 존재할 정도도 아니었어.
+                안전한 수준이었고, 그래도 잠재적 문제라고 생각해서 timer를 할당해 준 거야.
+
+
+
+
+
+
+            막판에야 기능별(C++ 라이브러리화)로 일부 재작성(팬·센서·통신 등).
+            ->
+                [ㄱ]
+                    막판에 한 게 아니야.
+                    프로젝트 최종 발표까지도 단일 소스 파일이었어.
+                    기능별로 일부 재작성한 건, 프로젝트 종류 이후 개인적으로 한 거야.
+
+
+
+
+
+
+            코드가 2000~3000줄 넘어가며 유지보수 어려움 → 뒤늦게 모듈별 hpp에 분산(팬, 먼지 센서, Wi-Fi 등).
+            ->
+                [ㄱ]과 동일.
+
+
+
+
+
+
+            코드 대부분 한 파일에 몰아서 작성(추가 센서 붙일 때마다 늘어나), 후반에야 분할.
+            ->
+                [ㄱ]과 동일.
+
+
+
+
+
+
+            통신 프로토콜 정리, 시연 매뉴얼 등은 팀장+사용자 협의.
+            ->
+                통신 프로토콜이면, 보드와 APP이 주고받는 명령을 어떻게 구분하는가를 말하는 거야?
+                그거라면, 팀원들 중 APP 제작(app inventor 사용)자와 함께 작업했어. 통신 프로토콜도 함께 결정하고.
+
+
+
+
+
+
+
+            소스일체(3천 줄)로 진행 → 개발 후반에 모듈화.
+            ->
+                [ㄱ]과 동일.
+
+
+
+
+
+
+            중반: 4초음파 간섭·SW 딜레이 문제 등으로 non-blocking·Timer 분배 필요성 절감.
+            ->
+                'non-blocking 방식의 코드 설계'는 프로젝트 처음부터 계획한 거였어.
+
+
+
+
+
+
+
+            별개로 추가하고 싶은 내용
+            ->
+                1.
+                기존 팀의 기계적 노하우 중 하나인데,
+                기존에도 4선 stepper motor를 사용했더라고.
+                그런데 모터가 stepping 자체가 되지 않는 상황이 있었어.
+                여기서 신기한 노하우를 받았는데,
+                stepper motor와 전용 motor driver 사이에 연결된 4선을 몇 바퀴 꼬았더니, 감쪽같이 stepping이 원활해지더라고.
+                우리 모두 이유를 모르지만, 여튼 신기한 노하우였어.
+
+
+
+    최종적으로 너가 재파악하여 정리한 내용
+    ->
+        아래는 4학년 1학기 캡스톤디자인2(스마트 공기 청정 로봇) 프로젝트에 대해,  
+        이미 주어진 긴 답변들을 **재검토**하며 **수정·추가** 지점(“내용들”)을 **반영**한 새로운 통합 정리본입니다.  
+        특히, **시간 순서**와 **주요 기술 흐름**을 중심으로, 각 지점에서의 “왜·어떻게”를 보강했고,  
+        “처음부터 non-blocking 의도를 갖고 있었다”, “Timer가 부족하거나 심각한 문제가 있었던 건 아니었다” 등도 수정했습니다.
+
+        ---
+
+        # 1. 프로젝트 배경 및 최종 목표
+
+        ## 1.1 전작(3학년 2학기)과의 연계
+
+        - 3학년 2학기 때: 사용자는 **IoT 가전 원격 제어(캡스톤디자인1)**를 완성.  
+        - 동시기에 다른 팀(“서빙 로봇”)이 **자율 주행** 구현에 실패.  
+        - 4학년 1학기: “서빙 로봇” 팀(기계적 설계 노하우)과 협력 → “**스마트 공기 청정 로봇**” 주제.  
+        - 사용자는 SW 전반 담당(특히 **non-blocking** 방식, 멀티 센서·모터 통합, Wi-Fi 통신).
+
+        ## 1.2 최종 목표
+
+        - **주제**: 로봇이 집 안을 90° 구조로(초음파+스텝퍼), APP 명령에 따라  
+        1) 특정 위치로 이동해 **공기청정**  
+        2) 혹은 맵 전체를 천천히 순회하며 청정  
+        - **센싱**: 먼지(PMS7003), 가스(MQ-2; 미완성), 기울기(넘어짐 감지) 등.  
+        - **Wi-Fi 통신**: non-blocking, APP과 직접 연결(AT Command) – 이전 캡스톤1에서 가져온 코드를 확장.  
+        - **맵핑**: 부팅 후 1회 “벽 따라 한 바퀴” 돌며 rough한 좌표 작성(데드레코닝) → 이후 위치·공기청정 명령 시 활용.
+
+        > **주의**: “집 안을 돌아다니며 실시간 먼지·가스를 측정 → 어느 지점이 더 나쁜가?” 이런 기능은 **없음**.  
+        > – 대신 “사용자가 APP에서 ‘맵 전체 순회’ or ‘특정 위치’ 명령” 주면 해당 동작 수행, 그리고 FAN 동작.
+
+        ---
+
+        # 2. 진행 흐름 (시간 순서)
+
+        ## 2.1 초기 단계 (프로젝트 착수)
+
+        1) **Arduino MEGA 선택**  
+        - “하나의 보드로 다 처리하자” → MEGA는 Timer·핀·RAM 등 충분.  
+        - ‘분산 보드’ 방식은 **(중요)**:  
+            - 사실 “막히면 추가 보드를 붙이자”는 여유가 있었고, 단일 보드가 오히려 편한 길.  
+            - 즉, “어려워서 안 했다”기보다 “한 보드가 보통 임베디드 제품 구성에 자연스럽고 MEGA가 남아돌 것”이라 믿음.
+
+        2) **ROS나 LiDAR 등 고급 프레임워크 제외**  
+        - 시간·학습 부담이 커, “학부 3개월짜리”로는 과도.  
+        - 기존 서빙 로봇도 초음파 기반이라, 그대로 초음파 재활용하기로 결정.
+
+        3) **(처음부터) non-blocking 코드 구상**  
+        - 이전 3학년 캡스톤1 때는 블록킹이라도 크게 문제 없었으나, 이번엔 자율 주행 + 멀티 센서 + FAN + 통신 등 **동시성**이 중요 → 처음부터 non-blocking 의도로 설계.  
+        - 다만, 정확한 Timer 분배나 HW 자원 구체화는 “아직 굳이 안 해도 된다” 생각(“MEGA면 무조건 여유롭다!”).
+
+        ## 2.2 중반: 자율 주행 로직·초음파 충돌
+
+        1) **주행 센서: 4× 초음파**  
+        - 앞뒤 2개(우측)로 벽·기울기 측정, 전방 2개로 장애물.  
+        - **간섭**: 초음파가 같은 주파수이면 동시 구동 시 잡음 → “하나씩 순차 구동”.  
+        - 외부 인터럽트 핀 문제도 있었으나, 우선 1초에 2~2.5사이클 측정(줄어듦)으로 타협.
+
+        2) **스텝퍼 모터: SW 딜레이 vs. Timer**  
+        - 처음에는 “동작 확인용”으로 `delay()`나 millis() 기반 블록킹을 잠깐 썼음 – “사용해 보면서 모터 특성 파악”.  
+        - 이후 곧바로 non-blocking(소프트웨어 루프)으로 바꿈.  
+        - “만약 5ms 밀렸으면 그만큼 스텝 속도 올리는” 임시 보정 로직도 시도.  
+        - 이게 잠재적 문제(탈조 위험, 정밀도 저하)는 있었지만, “즉시 큰 사고”는 없었음.
+
+        3) **자율 주행 알고리즘**  
+        - 집 구조가 90도 벽만 있다고 가정, “우측 벽 따라” 이동 + 회전.  
+        - “맵 작성” = 데드레코닝(스텝 수로 x, y 누적) + ‘(0,0)’ 원점은 바닥 검정 라인(가짜 충전대) 인식 시 리셋.  
+        - 코드 예: ‘moveStraight()’에서 우측 2초음파 값 (DR1, DR2) → 거리 오차(dTL), 기울기(currSlope) → 모터 속도 비율 ratio_stepperSpeed1/2로 보정.
+
+        ## 2.3 후반: Timer 분배·추가 기능 확장
+
+        1) **Timer 자원 분배**  
+        - “SW 딜레이” 방식도 큰 문제는 없었으나, 더 안전·정밀 위해 스텝퍼에 **16-bit Timer** 할당(각 1개).  
+        - Fan 모터, RGB LED, 부저 등에 남은 Timer(1,5,2) 배치. Timer0은 그대로 clock/millis용.  
+        - 실제로 Timer가 부족하거나 핀이 대단히 모자라진 않았음. MEGA의 자원은 충분.
+
+        2) **Wi-Fi 통신 non-blocking화**  
+        - 이전 캡스톤1의 AT Command 코드를 가져와, “SW transmit buffer” 등 추가 → `sendCommandToApp()`가 주기적으로 한 개씩 큐에서 꺼내 전송.  
+        - 수신도 IRQ 대신 폴링 + 상태머신(“+IPD” → parsing) 구조.
+
+        3) **FAN + 먼지 센서(PMS7003)**  
+        - FAN PWM(0~255) & 4개 터치 센서 or APP 명령.  
+        - Auto 모드 시 PM10값(20~50) → 150~255 선형 매핑.  
+        - 가스 센서(MQ-2)는 기회가 없어 사실상 미완. 기울기 센서(넘어짐 감지), 라인 IR(검정 바닥) 등 부가 기능도 비슷.
+
+        4) **소스파일 분할 문제**  
+        - 사실 **마지막까지도** 한 파일(3천 줄)로 개발 → 유지보수 난항.  
+        - 일부 기능(팬, 먼지, Wi-Fi)만 hpp에 분리 시도했지만, 시연 후 “개인 공부 차원”으로 재작성.  
+        - 따라서 “프로젝트 종반부에야 모듈화했다”는 표현보단, “결국 발표 땐 단일 파일이었고, 이후 개인적으로 분리”.
+
+        ---
+
+        # 3. 주요 구현 및 수정 사항
+
+        ## 3.1 청정 명령 로직 (APP 명령)
+
+        - “실시간 센싱해서 어디 공기가 나쁜가?”가 아니라, 단순히 **두 명령**  
+        1) “집 전체 순회” → 천천히 돌며 Fan 작동  
+        2) “지정 좌표로 이동” → 그 자리서 Fan 작동  
+        - 가스 센서는 미완, 먼지 센서도 FAN 자동 제어 외엔 위치별 분석 기능 없음.
+
+        ## 3.2 분산 보드 여부
+
+        - 사용자 입장: “MEGA 하나면 충분. 막히면 보드 추가” → **분산 보드가 어려워서 포기** 아님.  
+        - 실제로 자원이 모자라진 않아 Timer도 넉넉, 핀 50개 중 다 못 씀.
+
+        ## 3.3 스텝퍼 소프트웨어 딜레이 시절
+
+        - 처음에 delay() 쓴 이유: 모터 처음 만져보고 “어떻게 동작시키는지” 시연용.  
+        - 금방 non-blocking(소프트 루프) 옮겼고, 이후 Timer 전환.  
+        - 탈조 위험이나 정밀도 한계는 “크게 체감하진 않았다” → 하지만 미래에 문제될 수도 있어 Timer로 확실히 옮김.
+
+        ## 3.4 모듈화 시점
+
+        - 최종 발표 전까지는 사실상 **단일 소스**.  
+        - 발표 후, 개인적으로 하드웨어별 .hpp re-implementation(팬, 먼지, Wi-Fi, 터치 센서 등) → C++ 실력 향상.  
+        - APP 통신 프로토콜: 팀장+APP 담당과 협의. PC 시리얼 모니터 등으로도 디버그.
+
+        ## 3.5 초음파 간섭 & 외부 인터럽트
+
+        - 하나씩 구동(4개 순차) 최대 2~2.5 Hz/초 → 큰 문제는 아니나, 이상적이진 않음.  
+        - 어떤 때는 2개 초음파를 한 외부 인터럽트에 묶어봤고, 노이즈가 부분적으로 줄었지만 시도 중단.  
+        - 잠재적 개선점: “오실로스코프 + 다이오드 등 회로적 방법”으로 더 깊이 실험했으면 좋았으나, 시간 부족.
+
+        ---
+
+        # 4. 팀 프로젝트와 협업
+
+        1) **기계적 노하우**:  
+        - 원래 서빙 로봇 팀이 쓰던 4선 스텝퍼·섀시.  
+        - 기울기 센서·라인 IR 같은 하드웨어 추가 아이디어도 팀원들이 제안.
+
+        2) **SW 전담**:  
+        - 팀장은 어느 정도 코딩 가능하지만, “수준 차가 커서” 실질적으로 전부 사용자가 짰음.  
+        - 협업은 “어떤 센서 붙일지, 어떤 기능까지 넣을지” 결정하는 회의 위주.  
+        - 통신 프로토콜(“+IPD, length, data”)은 APP 담당과 협동해 규정.
+
+        3) **개발 일정·문서**:  
+        - 통합 코드가 방대해졌으나, 끝까지 한 파일을 유지(리팩토링은 발표 후 개인작업).  
+        - 최종 시연: 90° 구조에서 “자율 주행 + 먼지 센서 + FAN + Wi-Fi APP 명령” OK.
+
+        ---
+
+        # 5. 기타 세부 수정·추가 사항
+
+        1) **“집 전체를 돌아다니며 먼지·가스 측정”**은 없음  
+        - 실시간 맵핑 식이 아니라, “맵은 스텝·벽 기반으로 한 번만 만들고, 팬 작동은 단순 명령” 방식.
+
+        2) **안일한 자원 설계?**  
+        - 실제로 “안일하다”기보다 **“MEGA가 엄청 넉넉”**해서 큰 문제 없었음. Timer도 5개 중 1~2개만 더 쓰면 되니까.  
+        - Timer 전환은 “SW 타이밍이 대재앙이라서”가 아니라, **정확도와 안전성을 높이기 위한 업그레이드** 정도.
+
+        3) **SW 분할 시점**  
+        - 공식적으로는 “발표 직전”까지는 대부분 단일 파일. “후반에야 일부 re-implementation 시도” → 실제 완성은 **프로젝트 종료 후**.
+
+        4) **초음파 추가 이야기**  
+        - 이전 서빙 로봇이 초음파로 주행하려다 실패 → 이번에도 “같은 초음파지만, 더 체계적으로 non-blocking + Timer + interrupt 관리”해서 성공.
+
+        5) **신기한 기계 노하우**  
+        - 스텝퍼 모터 4선을 “몇 바퀴 꼬아” 배선하자, 전혀 안 되던 모터가 잘 돈 사례. 정확한 원인은 불명.
+
+        ---
+
+        # 6. 결론
+
+        - 이 캡스톤디자인2는, **자율 주행 + 공기 청정**을 통합한 로봇을 **Arduino MEGA 단일 보드**로 구현.  
+        - **HW 자원은 충분**(Timer·핀), 초음파 4개 순차 구동으로 벽 추적, 스텝퍼는 Timer 제어(탈조 안전).  
+        - 먼지 센서 + FAN(4단: Off/Low/High/Auto)으로 앱 or 터치 센서에 따라 제어 가능.  
+        - **가스 센서**, **기울기 센서** 등은 추가하려 했지만 부분 구현.  
+        - 코드상 **non-blocking** 통신·주행으로 여러 모듈 동시 운영 가능, 학부 수준으로는 “큰 스케일” 시연 완수.
+
+        **의의**:  
+        - 전작(3-2) 원격 제어 코드 재활용 → 한층 업그레이드(non-blocking 버퍼 등).  
+        - 로봇 자율 주행(초음파)과 기계적 섀시 노하우(서빙 로봇 팀) 접목.  
+        - 후반부 Timer 전환으로 정확도↑, 프로젝트 이후 C++ 분할구현(모듈화)로 **개인 역량**도 강화.
+
+        **개선점**:  
+        - 학부 3개월 한정이라 ROS·LiDAR·고급 센서 등은 미도입.  
+        - 가스 센서, 기울기 처리 등도 완성도 낮음.  
+        - 코드 분할·문서화는 시연 직후로 미뤄져 공식 발표에는 단일 소스로 임시 마무리.
+
+        결과적으로, “하나의 MEGA 보드”에서 “여러 모듈(초음파·스텝퍼·FAN·LED·부저·Wi-Fi·센서 등)”을
+        소프트웨어적으로 깔끔하게(대부분 non-blocking) 통합했다는 점이 이 프로젝트의 가장 큰 성과로 꼽힌다.
+
+
+
+
+
+
+
+
+
+
+

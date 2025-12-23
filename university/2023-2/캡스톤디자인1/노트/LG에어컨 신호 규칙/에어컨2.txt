@@ -1,0 +1,207 @@
+282
+Protocol=LG Address=0x88 Command=0x30 Raw-Data=0x8800303 (28 bits) MSB first
+283
+Protocol=LG Address=0x88 Command=0x1008 Raw-Data=0x8810089 (28 bits) MSB first
+284
+Protocol=LG Address=0x88 Command=0x1314 Raw-Data=0x8813149 (28 bits) MSB first
+285
+Protocol=LG Address=0x88 Command=0x834 Raw-Data=0x880834F (28 bits) MSB first
+286
+Protocol=LG Address=0x88 Command=0xC005 Parity fail Raw-Data=0x88C0051 (28 bits) MSB first
+287
+Protocol=LG Address=0x88 Command=0x34 Raw-Data=0x8800347 (28 bits) MSB first
+288
+Protocol=LG Address=0x88 Command=0x1315 Raw-Data=0x881315A (28 bits) MSB first
+289
+Protocol=LG Address=0x88 Command=0x830 Raw-Data=0x880830B (28 bits) MSB first
+290
+Protocol=LG Address=0x88 Command=0xC005 Parity fail Raw-Data=0x88C0051 (28 bits) MSB first
+
+
+전원 터보 상하 터보 전원 전원 상하 풍속 전원 0 6 5 6 0 0 5 4 0
+
+
+
+Q1)
+전원킬때 0x8800303 이게아니라 0x8800347 이게 뜸.
+
+
+->
+buttonDebugging
+0 6 5 6 0 0 5 4 0
+
+->
+8800303
+8810089
+8813149
+880834F
+88C0051
+8800347
+881315A
+880830B
+88C0051
+
+
+8800303
+8810089
+8813149
+880834F
+88C0051
+8800347
+881315A
+880830B
+88C0051
+
+확인.
+
+
+
+Q1)
+IRstatusDebugging
+free
+
+
+->
+3
+Protocol=LG Address=0x88 Command=0x30 Raw-Data=0x8800303 (28 bits) MSB first
+4
+Protocol=LG Address=0x88 Command=0x1008 Raw-Data=0x8810089 (28 bits) MSB first
+5
+Protocol=LG Address=0x88 Command=0x1314 Raw-Data=0x8813149 (28 bits) MSB first
+6
+Protocol=LG Address=0x88 Command=0x834 Raw-Data=0x880834F (28 bits) MSB first
+7
+Protocol=LG Address=0x88 Command=0xC005 Parity fail Raw-Data=0x88C0051 (28 bits) MSB first
+8
+Protocol=LG Address=0x88 Command=0x34 Raw-Data=0x8800347 (28 bits) MSB first
+9
+Protocol=LG Address=0x88 Command=0x1315 Raw-Data=0x881315A (28 bits) MSB first
+10
+Protocol=LG Address=0x88 Command=0x830 Raw-Data=0x880830B (28 bits) MSB first
+11
+Protocol=LG Address=0x88 Command=0xC005 Parity fail Raw-Data=0x88C0051 (28 bits) MSB first
+
+
+
+
+
+
+Q1)
+debugging
+power tempUP turbo swing turbo tempUP eco turbo power power swing fanSpeed power power power
+->
+77
+Protocol=LG Address=0x88 Command=0x30 Raw-Data=0x8800303 (28 bits) MSB first
+78
+Protocol=LG Address=0x88 Command=0x840 Raw-Data=0x880840C (28 bits) MSB first
+79
+Protocol=LG Address=0x88 Command=0x1008 Raw-Data=0x8810089 (28 bits) MSB first
+80
+Protocol=LG Address=0x88 Command=0x1314 Raw-Data=0x8813149 (28 bits) MSB first
+81
+Protocol=LG Address=0x88 Command=0x834 Raw-Data=0x880834F (28 bits) MSB first
+82
+Protocol=LG Address=0x88 Command=0x844 Parity fail Raw-Data=0x8808440 (28 bits) MSB first
+83
+Protocol=LG Address=0x88 Command=0x1004 Raw-Data=0x8810045 (28 bits) MSB first
+84
+Protocol=LG Address=0x88 Command=0x1008 Raw-Data=0x8810089 (28 bits) MSB first
+85
+Protocol=LG Address=0x88 Command=0xC005 Parity fail Raw-Data=0x88C0051 (28 bits) MSB first
+86
+Protocol=LG Address=0x88 Command=0x34 Raw-Data=0x8800347 (28 bits) MSB first
+87
+Protocol=LG Address=0x88 Command=0x1315 Raw-Data=0x881315A (28 bits) MSB first
+88
+Protocol=LG Address=0x88 Command=0x830 Raw-Data=0x880830B (28 bits) MSB first
+89
+Protocol=LG Address=0x88 Command=0xC005 Parity fail Raw-Data=0x88C0051 (28 bits) MSB first
+90
+Protocol=LG Address=0x88 Command=0x30 Raw-Data=0x8800303 (28 bits) MSB first
+91
+Protocol=LG Address=0x88 Command=0xC005 Parity fail Raw-Data=0x88C0051 (28 bits) MSB first
+
+
+
+->
+0 1 6 5 6 1 7 6 0 0 5 4 0 0 0
+->
+94
+Protocol=LG Address=0x88 Command=0x30 Raw-Data=0x8800303 (28 bits) MSB first
+95
+Protocol=LG Address=0x88 Command=0x840 Raw-Data=0x880840C (28 bits) MSB first
+96
+Protocol=LG Address=0x88 Command=0x1008 Raw-Data=0x8810089 (28 bits) MSB first
+97
+Protocol=LG Address=0x88 Command=0x1314 Raw-Data=0x8813149 (28 bits) MSB first
+98
+Protocol=LG Address=0x88 Command=0x834 Raw-Data=0x880834F (28 bits) MSB first
+99
+Protocol=LG Address=0x88 Command=0x844 Parity fail Raw-Data=0x8808440 (28 bits) MSB first
+100
+Protocol=LG Address=0x88 Command=0x1004 Raw-Data=0x8810045 (28 bits) MSB first
+101
+Protocol=LG Address=0x88 Command=0x1008 Raw-Data=0x8810089 (28 bits) MSB first
+102
+Protocol=LG Address=0x88 Command=0xC005 Parity fail Raw-Data=0x88C0051 (28 bits) MSB first
+103
+Protocol=LG Address=0x88 Command=0x34 Raw-Data=0x8800347 (28 bits) MSB first
+104
+Protocol=LG Address=0x88 Command=0x1315 Raw-Data=0x881315A (28 bits) MSB first
+105
+Protocol=LG Address=0x88 Command=0x830 Raw-Data=0x880830B (28 bits) MSB first
+106
+Protocol=LG Address=0x88 Command=0xC005 Parity fail Raw-Data=0x88C0051 (28 bits) MSB first
+107
+Protocol=LG Address=0x88 Command=0x30 Raw-Data=0x8800303 (28 bits) MSB first
+108
+Protocol=LG Address=0x88 Command=0xC005 Parity fail Raw-Data=0x88C0051 (28 bits) MSB first
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+아두이노 분할구현 팁
+-> https://eu4ng.tistory.com/20
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ endline
